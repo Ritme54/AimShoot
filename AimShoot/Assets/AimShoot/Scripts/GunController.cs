@@ -11,6 +11,9 @@ public class GunController : MonoBehaviour
 
     private float lastFireTime = -999f;
 
+    public int currentAmmo = 12; // 현재 탄약 (초기값 샘플)
+    public int maxAmmo = 12;     // 탄창 용량
+
 
 
     void Update()
@@ -39,7 +42,7 @@ public class GunController : MonoBehaviour
             }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+
             RaycastHit[] hits = Physics.RaycastAll(ray, maxDistance, targetLayerMask);
 
             if (hits.Length == 0)
@@ -73,33 +76,29 @@ public class GunController : MonoBehaviour
             // 디버그 로그 (기존과 유사하되 보다 명확한 정보 표기)
             Debug.Log($"Hit : {hitObj.name} at {selHit.point} (Collider: {hitCollider.name})");
 
-            // Target 컴포넌트 찾기:
-            // 기존 코드에서 Targets(또는 Target) 컴포넌트명을 사용하셨을 가능성이 있으니,
-            // 우선 hitObj에서 Targets 컴포넌트를 시도하고, 없으면 부모에서도 찾도록 안전하게 처리합니다.
-            // 변수명 변경 금지 원칙을 지켜 'target'이라는 지역변수를 사용합니다 (짧고 친숙한 이름).
-           //var target = hitObj.GetComponent<Targets>();                 // 기존에 사용하신 이름이 Targets라면 이것으로 동작
-           //if (target == null && hitObj.transform.parent != null)
-           //{
-           //    // 머리 콜라이더가 자식일 경우 부모에서 타깃 컴포넌트를 찾음
-           //    target = hitObj.transform.parent.GetComponent<Targets>();
-           //}
+            var target = hitObj.GetComponentInParent<Targets>();                 // 기존에 사용하신 이름이 Targets라면 이것으로 동작
+            if (target == null && hitObj.transform.parent != null)
+            {
+                // 머리 콜라이더가 자식일 경우 부모에서 타깃 컴포넌트를 찾음
+                target = hitObj.transform.parent.GetComponent<Targets>();
+            }
 
-           // if (target != null)
-           // {
-           //     // 헤드샷 여부 판정: 맞은 콜라이더가 Head 레이어에 속하는지로 판단
-           //     bool isHead = (hitCollider.gameObject.layer == LayerMask.NameToLayer("Head"));
-           //
-           //     // 기존 CalculateDamage 함수 호출(함수명 및 내부는 변경하지 않음)
-           //     int dmg = CalculateDamage(isHead);
-           //
-           //     // 기존 Target(s) 인터페이스에 맞춰 OnHit 호출 (기존 변수/함수명 유지)
-           //     target.OnHit(isHead, dmg);
-           // }
-           // else
-           // {
-           //     // Targets 컴포넌트가 전혀 없을 때의 디버그 메시지 (디버깅 용)
-           //     Debug.Log($"Hit collider {hitCollider.name} but no Targets component found on object or parent.");
-           // }
+            if (target != null)
+            {
+                // 헤드샷 여부 판정: 맞은 콜라이더가 Head 레이어에 속하는지로 판단
+                bool isHead = (hitCollider.gameObject.layer == LayerMask.NameToLayer("Head"));
+
+                // 기존 CalculateDamage 함수 호출(함수명 및 내부는 변경하지 않음)
+                int dmg = CalculateDamage(isHead);
+
+                // 기존 Target(s) 인터페이스에 맞춰 OnHit 호출 (기존 변수/함수명 유지)
+                target.OnHit(isHead, dmg);
+            }
+            else
+            {
+                // Targets 컴포넌트가 전혀 없을 때의 디버그 메시지 (디버깅 용)
+                Debug.Log($"Hit collider {hitCollider.name} but no Targets component found on object or parent.");
+            }
         }
 
         // CalculateDamage(): 기존 함수명 및 내부 로직 구조 유지(단, 지역변수명은 짧게 유지)

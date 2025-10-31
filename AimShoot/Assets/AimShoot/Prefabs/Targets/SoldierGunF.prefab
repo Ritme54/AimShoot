@@ -2037,6 +2037,7 @@ GameObject:
   - component: {fileID: 6490264163892625395}
   - component: {fileID: 1312348735935534962}
   - component: {fileID: 6688595086051716425}
+  - component: {fileID: -984342175969026102}
   m_Layer: 3
   m_Name: SoldierGunF
   m_TagString: Untagged
@@ -2127,6 +2128,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 1.5, z: 0.35}
   m_Center: {x: 0, y: 0.75, z: 0}
+--- !u!114 &-984342175969026102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8160230040516519752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5b29a892b6a6b4fa9fda473e2cfa4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 25
+  currentHP: 0
+  baseScore: 10
+  hitEffectPrefab: {fileID: 0}
+  hitSound: {fileID: 0}
+  deathSound: {fileID: 0}
+  destroyDelay: 0.05
+  spawnScorePopup: 1
 --- !u!1 &8189813689250016239
 GameObject:
   m_ObjectHideFlags: 0

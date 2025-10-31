@@ -1094,6 +1094,7 @@ GameObject:
   - component: {fileID: 4434213764317990657}
   - component: {fileID: 1527022040872872639}
   - component: {fileID: 1727795676687094916}
+  - component: {fileID: -4655159392673917416}
   m_Layer: 3
   m_Name: SoldierRifleF
   m_TagString: Untagged
@@ -1184,6 +1185,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 1.5, z: 0.35}
   m_Center: {x: 0, y: 0.75, z: 0}
+--- !u!114 &-4655159392673917416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4296676283898966871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5b29a892b6a6b4fa9fda473e2cfa4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 25
+  currentHP: 0
+  baseScore: 10
+  hitEffectPrefab: {fileID: 0}
+  hitSound: {fileID: 0}
+  deathSound: {fileID: 0}
+  destroyDelay: 0.05
+  spawnScorePopup: 1
 --- !u!1 &4331556252772158350
 GameObject:
   m_ObjectHideFlags: 0
