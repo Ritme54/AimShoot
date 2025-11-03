@@ -73,6 +73,7 @@ public class GameManager : MonoBehaviour
     // AddScore: 외부(예: Targets.OnDie)에서 호출하여 점수 누적
     public void AddScore(int amount)
     {
+    
         totalScore += amount;              // 점수 누적(기존 변수명 유지)
         UpdateScoreUI();                   // UI 즉시 갱신
         Debug.Log($"Score +{amount}, Total: {totalScore}"); // 디버그 로그

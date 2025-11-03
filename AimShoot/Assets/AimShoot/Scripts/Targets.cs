@@ -23,6 +23,10 @@ public class Targets : MonoBehaviour
     private AudioSource audioSrc;        // 내부에서 사용할 AudioSource
     private bool isDead = false;         // 이미 죽었는지 플래그(중복 처리 방지)
 
+    private bool isElite = false;
+    private bool isMoving = false;
+  //  private GameManager gm; // 캐싱용(선택)
+
     private void Awake()
     {
         currentHP = maxHP;
@@ -33,46 +37,75 @@ public class Targets : MonoBehaviour
             audioSrc = gameObject.AddComponent<AudioSource>();
             audioSrc.playOnAwake = false; // 자동 재생 방지
         }
+//        gm = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+
     }
+
+    public void ResetTarget()
+    {
+        isDead = false;
+        currentHP = maxHP;
+        // 시각/애니메이션 초기화가 필요하면 여기에서 처리
+        // 예: animator.Rebind() 등
+    }
+
+    // 정예/이동 플래그 설정 메서드(SpawnManager에서 호출)
+    public void SetElite(bool elite)
+    {
+        isElite = elite;
+        // 시각적 표시: 예를 들어 머터리얼 변경이나 이펙트 활성화
+        // (현재 점수/체력은 동일하게 유지하므로 값 변경은 하지 않음)
+    }
+    public void SetMoving(bool moving)
+    {
+        isMoving = moving;
+        // 이동 로직을 별도 스크립트로 구성하였다면 활성화/비활성화 처리
+        var mover = GetComponent<MonoBehaviour>(); // 필요 시 구체 스크립트로 교체
+                                                   // 예: if (mover != null) mover.enabled = moving;
+    }
+
 
     public void OnHit(bool isHead, int damage)
     {
-        if (!isDead)
+        // 이미 죽어있으면 아무 처리하지 않음
+        if (isDead)
+        { return; }
+
+      
+        // 기존 OnHit 로직: 데미지 계산 및 체력 감소
+        int finalDmg = damage;
+        if (isHead)
         {
-            return; 
-        }
-               
-            int finalDmg = damage;
-            if (isHead)
-            {
-                finalDmg = Mathf.CeilToInt(damage * 1.5f);
-            }
-            currentHP -= finalDmg;
-            // 피격 이펙트 재생(있을 경우) - 표적 중앙에 간단히 생성
-            if (hitEffectPrefab != null)
-            {
-                Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-            }
-
-            // 피격 사운드 재생(있을 경우)
-            if (hitSound != null)
-            {
-                audioSrc.PlayOneShot(hitSound);
-            }
-
-            // 체력이 0 이하이면 사망 처리 호출
-            if (currentHP <= 0)
-            {
-                Die(isHead);                 // 헤드샷 여부를 전달하여 점수 보정에 사용
-            
+            finalDmg = Mathf.CeilToInt(damage * 1.5f);
         }
 
+        currentHP -= finalDmg;
+
+        // 피격 이펙트 재생(있을 경우)
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        // 피격 사운드 재생(있을 경우)
+        if (hitSound != null)
+        {
+            audioSrc.PlayOneShot(hitSound);
+        }
+
+        // 체력이 0 이하이면 사망 처리 호출
+        if (currentHP <= 0)
+        {
+            Die(isHead);
+        }
     }
+
 
     void Die(bool wasHead)
     {
         if (isDead) return;
         isDead = true;
+
 
         int awarded = baseScore;
         if (wasHead)
@@ -97,16 +130,21 @@ public class Targets : MonoBehaviour
             Debug.Log($"Score Popup: +{awarded}");
             // 추후 UI 팝업을 위해 GameManager에 위임하는 방식으로 변경 권장
         }
+        gameObject.SetActive(false);
+        // Die() 내부에서 마지막에 추가 (Targets.cs)
+        SpawnManager sm = UnityEngine.Object.FindFirstObjectByType<SpawnManager>();
+        if (sm != null)
+        {
+            sm.NotifyTargetDestroyed(this.gameObject);
+            Debug.Log("삭제");
+        }
+
+
 
         // 오브젝트 제거(약간 지연) - 이펙트/사운드 재생을 위해 destroyDelay 사용
         Destroy(gameObject, destroyDelay);
     }
-    // ResetTarget: 재사용(오브젝트 풀링 등) 시 호출하여 상태 리셋
-    public void ResetTarget()
-    {
-        isDead = false;
-        currentHP = maxHP;
-        // 시각적 리셋(머티리얼, 애니메이션 등)이 필요하면 여기에 추가
-    }
+  
+  
 }
 

@@ -32,14 +32,32 @@ public class GunController : MonoBehaviour
 
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            currentAmmo = maxAmmo; // 간단 리로드
+        }
+
+
         void Shoot()
         {
+
             Camera cam = Camera.main;
             if (cam == null)
             {
                 Debug.LogWarning("메인카메라 설정 안됨");
                 return;
             }
+
+            if (currentAmmo <= 0)
+            {
+                // 탄약 부족 처리(재장전 소리/로직 또는 로그)
+                Debug.Log("No ammo");
+                return;
+            }
+
+            // 발사 성공 시 탄약 감소
+            currentAmmo--;
+
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
@@ -77,6 +95,8 @@ public class GunController : MonoBehaviour
             Debug.Log($"Hit : {hitObj.name} at {selHit.point} (Collider: {hitCollider.name})");
 
             var target = hitObj.GetComponentInParent<Targets>();                 // 기존에 사용하신 이름이 Targets라면 이것으로 동작
+
+
             if (target == null && hitObj.transform.parent != null)
             {
                 // 머리 콜라이더가 자식일 경우 부모에서 타깃 컴포넌트를 찾음
