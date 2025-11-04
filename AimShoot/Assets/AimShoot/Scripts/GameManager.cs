@@ -1,3 +1,4 @@
+using NUnit.Framework.Interfaces;
 using UnityEngine;
 using UnityEngine.UI; // UI.Text 사용 시 필요 (만약 TMPro를 쓰면 using TMPro 추가)
 
@@ -18,6 +19,8 @@ public class GameManager : MonoBehaviour
     public Text timerText;                  // 타이머 표시용 UI 텍스트(연결 안 해도 동작함)
     public Text scoreText;                  // 점수 표시용 UI 텍스트(연결 안 해도 동작함)
     public Text bestText;                   // 최고기록 표시용 UI 텍스트(연결 안 해도 동작함)
+
+     
 
     // Awake: 게임이 시작되기 전 초기화
     void Awake()
@@ -58,6 +61,8 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();                   // UI 갱신
         UpdateTimerUI();                   // UI 갱신
         Debug.Log("Game Started");         // 디버그 로그
+        var sm = FindFirstObjectByType<SpawnManager>();
+        if (sm != null) sm.ResetState();
     }
 
     // EndGame: 시간 초과나 외부 이벤트로 게임을 종료할 때 사용

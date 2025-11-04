@@ -25,7 +25,14 @@ public class Targets : MonoBehaviour
 
     private bool isElite = false;
     private bool isMoving = false;
-  //  private GameManager gm; // 캐싱용(선택)
+    //  private GameManager gm; // 캐싱용(선택)
+
+    [SerializeField] private GameObject eliteVFX; // 정예 타겟용 VFX 오브젝트
+    [SerializeField] private MonoBehaviour movementScript; // 이동 로직 스크립트
+    [SerializeField] private Renderer[] targetRenderers; // 머터리얼 변경용 렌더러들
+    private MaterialPropertyBlock mpb;
+
+
 
     private void Awake()
     {
@@ -45,8 +52,32 @@ public class Targets : MonoBehaviour
     {
         isDead = false;
         currentHP = maxHP;
-        // 시각/애니메이션 초기화가 필요하면 여기에서 처리
-        // 예: animator.Rebind() 등
+
+        // 정예/이동 상태 초기화
+        isElite = false;
+        isMoving = false;
+
+        // VFX 초기화
+        if (eliteVFX != null) eliteVFX.SetActive(false);
+
+        // 이동 스크립트 비활성화
+        if (movementScript != null) movementScript.enabled = false;
+
+        // 렌더러 Emission 초기화 (materialPropertyBlock 사용 가정)
+        if (targetRenderers != null)
+        {
+            foreach (var r in targetRenderers)
+            {
+                if (r == null) continue;
+                r.GetPropertyBlock(mpb);
+                mpb.SetColor("_EmissionColor", Color.black);
+                r.SetPropertyBlock(mpb);
+            }
+        }
+
+        // 애니메이터가 있다면 리셋(있을 경우에만)
+        var animator = GetComponent<Animator>();
+        if (animator != null) animator.Rebind();
     }
 
     // 정예/이동 플래그 설정 메서드(SpawnManager에서 호출)
