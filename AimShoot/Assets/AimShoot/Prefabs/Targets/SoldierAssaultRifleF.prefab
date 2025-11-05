@@ -281,11 +281,36 @@ MonoBehaviour:
   maxHP: 25
   currentHP: 0
   baseScore: 10
+  eliteExtraHP: 0
+  movingExtraHP: 0
+  eliteMovingExtraHP: 0
+  defaultMaterial: {fileID: 2100000, guid: 1addf099752ba62488a655f79a83a321, type: 2}
+  eliteMaterial: {fileID: 2100000, guid: 1cd65ac734f9dff42b09667c0b135c63, type: 2}
+  movingMaterial: {fileID: 2100000, guid: 4c641dd655c93d640bb150fbb9387a5b, type: 2}
+  eliteMovingMaterial: {fileID: 2100000, guid: 1116710e3300dc84598a5457f90c3d69, type: 2}
+  targetRenderers:
+  - {fileID: 0}
   hitEffectPrefab: {fileID: 0}
   hitSound: {fileID: 0}
   deathSound: {fileID: 0}
-  destroyDelay: 0.05
-  spawnScorePopup: 1
+  OnKilled:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: 89fb0d4b370a1a24ba904ebdfa809312, type: 3}
+        m_TargetAssemblyTypeName: UnityEditor.MonoScript, UnityEditor.CoreModule
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnReturned:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1028099965870855067
 GameObject:
   m_ObjectHideFlags: 0

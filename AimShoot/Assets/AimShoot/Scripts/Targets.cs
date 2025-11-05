@@ -1,181 +1,134 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
+
+[Serializable] public class KilledEvent : UnityEvent<int> { }
+[Serializable] public class ReturnedEvent : UnityEvent<GameObject> { }
 
 public class Targets : MonoBehaviour
 {
+    [Header("Base Stats")]
+    public int baseMaxHP = 25;                // 프리팹 기본 최대 체력
+    [HideInInspector] public int currentHP;   // 런타임 체력
+    public int baseScore = 10;                // 프리팹 기본 점수
 
-    [Header("Stats")]
-    public int maxHP = 25;               // 최대 체력 (인스펙터에서 조정)
-    public int currentHP;                // 런타임용 현재 체력(초기화는 Awake에서 수행)
-    public int baseScore = 10;           // 기본 점수(파괴 시 지급)
+    [Header("Headshot")]
+    [Tooltip("헤드샷일 때 데미지 및 점수에 곱할 배수")]
+    public float headshotMultiplier = 1.5f;
 
+    [Header("VFX / Audio")]
+    public GameObject hitEffectPrefab;
+    public AudioClip hitSound;
+    public AudioClip deathSound;
 
-    [Header("Effext & Audio")]
-    public GameObject hitEffectPrefab;   // 피격 이펙트 프리팹(옵션)
-    public AudioClip hitSound;           // 피격 사운드(옵션)
-    public AudioClip deathSound;         // 사망 사운드(옵션)
+    [Header("Events")]
+    public KilledEvent OnKilled;              // GameManager.AddScore 연결 권장
+    public ReturnedEvent OnReturned;          // SpawnManager.NotifyTargetDestroyed 연결 권장
 
+    // 내부 상태
+    bool isDead = false;
 
-    [Header("Destroy")]
-    public float destroyDelay = 0.05f;   // 오브젝트 삭제 지연(이펙트 재생을 위해)
-    public bool spawnScorePopup = true;  // 점수 팝업 생성 여부(추후 UI 연동용)
+    // override / temp 값 (컴포넌트가 설정)
+    int? hpOverride = null;                   // null => 사용 안 함
+    int? scoreOverride = null;                // null => 사용 안 함
 
-    // 내부 필드(외부에서 변경하지 않음)
-    private AudioSource audioSrc;        // 내부에서 사용할 AudioSource
-    private bool isDead = false;         // 이미 죽었는지 플래그(중복 처리 방지)
+    // AudioSource
+    AudioSource audioSrc;
 
-    private bool isElite = false;
-    private bool isMoving = false;
-    //  private GameManager gm; // 캐싱용(선택)
-
-    [SerializeField] private GameObject eliteVFX; // 정예 타겟용 VFX 오브젝트
-    [SerializeField] private MonoBehaviour movementScript; // 이동 로직 스크립트
-    [SerializeField] private Renderer[] targetRenderers; // 머터리얼 변경용 렌더러들
-    private MaterialPropertyBlock mpb;
-
-
-
-    private void Awake()
+    void Awake()
     {
-        currentHP = maxHP;
-
-        audioSrc = GetComponent<AudioSource>();
-        if (audioSrc == null)
-        {
-            audioSrc = gameObject.AddComponent<AudioSource>();
-            audioSrc.playOnAwake = false; // 자동 재생 방지
-        }
-//        gm = UnityEngine.Object.FindFirstObjectByType<GameManager>();
-
+        audioSrc = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+        audioSrc.playOnAwake = false;
+        // 초기화
+        ResetTarget();
     }
 
+    // 풀에서 꺼냈을 때 반드시 호출
     public void ResetTarget()
     {
         isDead = false;
-        currentHP = maxHP;
+        ClearOverrides();
+        currentHP = baseMaxHP;
+    }
 
-        // 정예/이동 상태 초기화
-        isElite = false;
-        isMoving = false;
+    // 컴포넌트들이 호출하는 API: override 지정(대체)
+    public void SetHPOverride(int? hp)
+    {
+        hpOverride = hp;
+    }
 
-        // VFX 초기화
-        if (eliteVFX != null) eliteVFX.SetActive(false);
+    public void SetScoreOverride(int? score)
+    {
+        scoreOverride = score;
+    }
 
-        // 이동 스크립트 비활성화
-        if (movementScript != null) movementScript.enabled = false;
+    // 확실한 초기화: 호출 시 오버라이드 해제
+    public void ClearOverrides()
+    {
+        hpOverride = null;
+        scoreOverride = null;
+    }
 
-        // 렌더러 Emission 초기화 (materialPropertyBlock 사용 가정)
-        if (targetRenderers != null)
+    // 스폰 시 최종 HP 계산: 반드시 Apply(컴포넌트) 후 호출
+    public void FinalizeStatsAfterModifiers()
+    {
+        int appliedHP = hpOverride.HasValue ? hpOverride.Value : baseMaxHP;
+        currentHP = appliedHP;
+    }
+
+    // Apply incoming visual material via renderer.material assignment (instance)
+    public void ApplyMaterialToRenderers(Material mat)
+    {
+        if (mat == null) return;
+        var rends = GetComponentsInChildren<Renderer>();
+        foreach (var r in rends)
         {
-            foreach (var r in targetRenderers)
-            {
-                if (r == null) continue;
-                r.GetPropertyBlock(mpb);
-                mpb.SetColor("_EmissionColor", Color.black);
-                r.SetPropertyBlock(mpb);
-            }
+            if (r == null) continue;
+            r.material = mat; // 인스턴스화된 material 할당(다른 인스턴스 영향 없음)
         }
-
-        // 애니메이터가 있다면 리셋(있을 경우에만)
-        var animator = GetComponent<Animator>();
-        if (animator != null) animator.Rebind();
     }
 
-    // 정예/이동 플래그 설정 메서드(SpawnManager에서 호출)
-    public void SetElite(bool elite)
-    {
-        isElite = elite;
-        // 시각적 표시: 예를 들어 머터리얼 변경이나 이펙트 활성화
-        // (현재 점수/체력은 동일하게 유지하므로 값 변경은 하지 않음)
-    }
-    public void SetMoving(bool moving)
-    {
-        isMoving = moving;
-        // 이동 로직을 별도 스크립트로 구성하였다면 활성화/비활성화 처리
-        var mover = GetComponent<MonoBehaviour>(); // 필요 시 구체 스크립트로 교체
-                                                   // 예: if (mover != null) mover.enabled = moving;
-    }
-
-
+    // 데미지 처리 (isHead: 헤드샷 여부)
     public void OnHit(bool isHead, int damage)
     {
-        // 이미 죽어있으면 아무 처리하지 않음
-        if (isDead)
-        { return; }
+        if (isDead) return;
+        int applied = isHead ? Mathf.CeilToInt(damage * headshotMultiplier) : damage;
+        currentHP -= applied;
 
-      
-        // 기존 OnHit 로직: 데미지 계산 및 체력 감소
-        int finalDmg = damage;
-        if (isHead)
-        {
-            finalDmg = Mathf.CeilToInt(damage * 1.5f);
-        }
+        if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        if (hitSound != null && audioSrc != null) audioSrc.PlayOneShot(hitSound);
 
-        currentHP -= finalDmg;
-
-        // 피격 이펙트 재생(있을 경우)
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-        }
-
-        // 피격 사운드 재생(있을 경우)
-        if (hitSound != null)
-        {
-            audioSrc.PlayOneShot(hitSound);
-        }
-
-        // 체력이 0 이하이면 사망 처리 호출
-        if (currentHP <= 0)
-        {
-            Die(isHead);
-        }
+        if (currentHP <= 0) Die(isHead);
     }
 
+    // 최종 점수 계산 및 사망 처리
+    int GetFinalScore(bool wasHead)
+    {
+        int s = scoreOverride.HasValue ? scoreOverride.Value : baseScore;
+        if (wasHead) s = Mathf.CeilToInt(s * headshotMultiplier);
+        return s;
+    }
 
     void Die(bool wasHead)
     {
         if (isDead) return;
         isDead = true;
 
+        int awarded = GetFinalScore(wasHead);
 
-        int awarded = baseScore;
-        if (wasHead)
-        {
-            awarded = Mathf.CeilToInt(baseScore * 1.5f);
-        }
-        GameManager gm = FindFirstObjectByType<GameManager>();
-        if (gm != null)
-        {
-            gm.AddScore(awarded);
-        }
-        else
-        {
-            Debug.Log($"Score +{awarded} (GameManager 없음)");
-        }
-        if (deathSound != null)
-        {
-            audioSrc.PlayOneShot(deathSound);
-        }
-        if (spawnScorePopup)
-        {
-            Debug.Log($"Score Popup: +{awarded}");
-            // 추후 UI 팝업을 위해 GameManager에 위임하는 방식으로 변경 권장
-        }
+        if (OnKilled != null) OnKilled.Invoke(awarded);
+
+        if (deathSound != null && audioSrc != null) audioSrc.PlayOneShot(deathSound);
+
+        // 비활성화(풀 반환)
         gameObject.SetActive(false);
-        // Die() 내부에서 마지막에 추가 (Targets.cs)
-        SpawnManager sm = UnityEngine.Object.FindFirstObjectByType<SpawnManager>();
-        if (sm != null)
-        {
-            sm.NotifyTargetDestroyed(this.gameObject);
-            Debug.Log("삭제");
-        }
 
-
-
-        // 오브젝트 제거(약간 지연) - 이펙트/사운드 재생을 위해 destroyDelay 사용
-        Destroy(gameObject, destroyDelay);
+        if (OnReturned != null) OnReturned.Invoke(this.gameObject);
     }
-  
-  
-}
 
+    internal int? GetEffectiveMaxHP()
+    {
+        throw new NotImplementedException();
+    }//'Targets'에는 'GetEffectiveMaxHP'에 대한 정의가 포함되어 있지 않고, 'Targets' 형식의 첫 번째 인수를 허용하는 액세스 가능한 확장 메서드 'GetEffectiveMaxHP'이(가) 없습니다. using 지시문 또는 어셈블리 참조가 있는지 확인하세요.
+    //삭제할것
+}

@@ -153,8 +153,8 @@ public class SpawnManager : MonoBehaviour
         if (t != null)
         {
             t.ResetTarget();
-            t.SetElite(isElite);
-            t.SetMoving(isMoving);
+           // t.SetElite(isElite);
+           // t.SetMoving(isMoving);
         }
 
         obj.SetActive(true);

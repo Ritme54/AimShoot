@@ -622,11 +622,24 @@ MonoBehaviour:
   maxHP: 25
   currentHP: 0
   baseScore: 10
+  eliteExtraHP: 0
+  movingExtraHP: 0
+  eliteMovingExtraHP: 0
+  defaultMaterial: {fileID: 2100000, guid: 1addf099752ba62488a655f79a83a321, type: 2}
+  eliteMaterial: {fileID: 2100000, guid: 1cd65ac734f9dff42b09667c0b135c63, type: 2}
+  movingMaterial: {fileID: 2100000, guid: 4c641dd655c93d640bb150fbb9387a5b, type: 2}
+  eliteMovingMaterial: {fileID: 2100000, guid: 1116710e3300dc84598a5457f90c3d69, type: 2}
+  targetRenderers:
+  - {fileID: 0}
   hitEffectPrefab: {fileID: 0}
   hitSound: {fileID: 0}
   deathSound: {fileID: 0}
-  destroyDelay: 0.05
-  spawnScorePopup: 1
+  OnKilled:
+    m_PersistentCalls:
+      m_Calls: []
+  OnReturned:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2041268410818302621
 GameObject:
   m_ObjectHideFlags: 0
