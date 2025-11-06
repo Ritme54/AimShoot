@@ -3,49 +3,40 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // SpawnManager: PoolManager와 SpawnPoint를 사용하여 스폰을 관리합니다.
-// 인스펙터에서 poolManager, spawnPoints(SpawnPoint 컴포넌트), targetPrefabs 등을 연결하세요.
 public class SpawnManager : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    public SpawnPoint[] spawnPoints;          // 씬의 SpawnPoint 컴포넌트들(인스펙터 할당)
-    public GameObject[] targetPrefabs;        // 스폰할 프리팹들 (외형만 다름)
-    public int maxActiveT = 6;              // 동시 활성 표적 수 (원래 maxActiveTargets)
-    public float startDelay = 1f;           // 기존 initialSpawnDelay
-    public float spawnDelay = 1.5f;         // 기존 spawnInterval
+    public SpawnPoint[] spawnPoints;
+    public GameObject[] targetPrefabs;
+    public int maxActiveT = 6;
+    public float startDelay = 1f;
+    public float spawnDelay = 1.5f;
 
     [Header("Elite / Moving Settings")]
-    public int eliteGuaranteedEvery = 10;   // N번에 1번 정예 보장 (0=비활성)
-    public float eliteChance = 0.1f;        // 정예 확률(기본)
-    public int movingGuaranteedEvery = 8;   // N번에 1번 이동형 보장 (0=비활성)
-    public float movingChance = 0.2f;       // 이동 확률(기본)
-    public bool allowBothEnM = true;        // 한 스폰에서 정예+이동 허용 여부
-
+    public int eliteGuaranteedEvery = 10;
+    public float eliteChance = 0.1f;
+    public int movingGuaranteedEvery = 8;
+    public float movingChance = 0.2f;
+    public bool allowBothEnM = true;
 
     [Header("References")]
-    public PoolManager poolManager;           // 인스펙터에서 할당
-    public LayerMask targetLayerMask;         // SpawnPoint의 충돌 검사에 사용할 레이어 마스크
+    public PoolManager poolManager;
+    public LayerMask targetLayerMask;
 
     [Header("Debug")]
     public bool debugMode = false;
 
-
     // 내부 상태
-    private List<GameObject> activeList = new List<GameObject>(); // 이전 active
+    private List<GameObject> activeList = new List<GameObject>();
     private GameManager gm;
     private int spawnCounterGlobal = 0;
     private int spawnCounterElite = 0;
     private int spawnCounterMoving = 0;
 
-
-
     void Awake()
     {
-        gm = UnityEngine.Object.FindFirstObjectByType<GameManager>();
-        // poolManager는 인스펙터에서 연결하거나 Find 후 사용 가능
-        if (poolManager == null)
-        {
-            poolManager = FindFirstObjectByType<PoolManager>();
-        }
+        gm = FindFirstObjectByType<GameManager>();
+        if (poolManager == null) poolManager = FindFirstObjectByType<PoolManager>();
     }
 
     void Start()
@@ -59,14 +50,13 @@ public class SpawnManager : MonoBehaviour
 
         while (true)
         {
-            // GameManager가 있고 isRunning이 false이면 스폰 멈춤
+            // GameManager가 있고 게임이 멈춰있으면 스폰 대기
             if (gm != null && !gm.isRunning)
             {
                 yield return null;
                 continue;
             }
 
-            // 활성 리스트 정리
             CleanupActiveList();
 
             if (activeList.Count < maxActiveT)
@@ -74,6 +64,7 @@ public class SpawnManager : MonoBehaviour
                 SpawnPoint pt = PickAvailableSpawnPoint();
                 if (pt != null)
                 {
+                    pt.Occupy();         // 즉시 예약/점유 표시
                     SpawnAtPoint(pt);
                 }
             }
@@ -104,7 +95,6 @@ public class SpawnManager : MonoBehaviour
             int idx = (start + i) % spawnPoints.Length;
             SpawnPoint pt = spawnPoints[idx];
             if (pt == null) continue;
-
             if (!pt.IsAvailable(targetLayerMask)) continue;
             return pt;
         }
@@ -115,58 +105,104 @@ public class SpawnManager : MonoBehaviour
     {
         if (pt == null) return;
 
-        // 카운터 증가 (글로벌/정예/이동 각각)
-        spawnCounterGlobal++;
-        spawnCounterElite++;
-        spawnCounterMoving++;
-
-        // prefab 선택(동일 비율)
+        // 1) prefab 선택
         GameObject prefab = PickPrefabRandom();
-        if (prefab == null) return;
+        if (prefab == null)
+        {
+            if (debugMode) Debug.LogWarning("[SpawnManager] No prefab available.");
+            return;
+        }
 
-        // 보장(강제) 판정
-        bool forceElite = (eliteGuaranteedEvery > 0) && (spawnCounterElite % eliteGuaranteedEvery == 0);
-        bool forceMoving = (movingGuaranteedEvery > 0) && (spawnCounterMoving % movingGuaranteedEvery == 0);
+        // 2) 풀에서 오브젝트 가져오기 (비활성 상태 보장)
+        GameObject obj = (poolManager != null) ? poolManager.Get(prefab) : Instantiate(prefab);
+        if (obj == null)
+        {
+            if (debugMode) Debug.LogWarning("[SpawnManager] Failed to get object from pool / instantiate.");
+            return;
+        }
+        obj.SetActive(false);
 
-        // 혼합형 판정: 보장 OR 확률
+        // 3) Targets 준비
+        Targets t = obj.GetComponent<Targets>() ?? obj.GetComponentInParent<Targets>();
+        if (t == null)
+        {
+            Debug.LogError($"[SpawnManager] Prefab '{prefab.name}' missing Targets component.");
+            // 안전하게 반환
+            if (poolManager != null) poolManager.Release(obj);
+            else Destroy(obj);
+            return;
+        }
+
+        // 4) originSpawnPoint 저장(반환 시 안전한 Free를 위해)
+        t.originSpawnPoint = pt;
+
+        // 5) 초기화
+        t.ResetTarget();
+
+        // 6) 정예 / 이동 판정(보장 로직)
+        // spawnCounter는 실제 스폰 성공 시 갱신(아래에서 갱신)
+        bool forceElite = (eliteGuaranteedEvery > 0) && (spawnCounterElite + 1 >= eliteGuaranteedEvery);
+        bool forceMoving = (movingGuaranteedEvery > 0) && (spawnCounterMoving + 1 >= movingGuaranteedEvery);
+
         bool isElite = forceElite || (Random.value < eliteChance);
         bool isMoving = forceMoving || (Random.value < movingChance);
 
-        // 동시 발생 정책: allowBothEnM 사용
         if (!allowBothEnM && isElite && isMoving)
         {
-            // 정예 우선(원하면 이동 우선으로 바꿀 수 있음)
+            // 정예 우선
             isMoving = false;
         }
 
-        // 풀에서 꺼내기
-        GameObject obj = (poolManager != null) ? poolManager.Get(prefab) : Instantiate(prefab);
-        if (obj == null) return;
+        // 7) 컴포넌트 적용 (Reset 후 Finalize 전에 적용)
+        var eliteComp = obj.GetComponent<EliteModifier>();
+        if (eliteComp != null) eliteComp.Apply(isElite);
 
-        // 위치/회전 설정
-        obj.transform.position = pt.transform.position;
-        obj.transform.rotation = pt.transform.rotation;
-
-        // Targets 초기화
-        Targets t = obj.GetComponent<Targets>();
-        if (t == null) t = obj.GetComponentInParent<Targets>();
-        if (t != null)
+        var moveComp = obj.GetComponent<PatrolMovement>();
+        if (moveComp != null)
         {
-            t.ResetTarget();
-           // t.SetElite(isElite);
-           // t.SetMoving(isMoving);
+            // movement가 포인트 중심을 필요로 하면 center 값 전달
+            moveComp.centerPosition = pt.GetSpawnPosition(); // public Vector3 centerPosition 필요
+            moveComp.Apply(isMoving);
         }
 
-        obj.SetActive(true);
+        var specialComp = obj.GetComponent<SPMovement>(); // 특수 컴포넌트가 있으면
+        if (specialComp != null)
+        {
+            bool isSpecial = isElite && isMoving;
+            specialComp.Apply(isSpecial);
+        }
 
-        if (!activeList.Contains(obj)) activeList.Add(obj);
+        // 8) Targets 최종화
+        t.FinalizeStatsAfterModifiers();
+
+        // 9) 이벤트 등록 (반환/사망 콜백)
+        t.OnKilled.AddListener(OnTargetKilled);
+
+        t.OnReturned.AddListener(OnTargetReturned);
+        Debug.Log($"Added OnReturned listener for {t.gameObject.name} (instanceID={t.gameObject.GetInstanceID()}) at SpawnAtPoint");
+
+        //Debug.Log($"Added OnReturned listener for {t.name}");
+
+        // 10) 위치/활성화/포인트 점유
+        obj.transform.position = pt.GetSpawnPosition();
+        obj.transform.rotation = pt.transform.rotation;
+        obj.SetActive(true);
         pt.Occupy();
+
+        // 11) 리스트/카운터 업데이트
+        if (!activeList.Contains(obj)) activeList.Add(obj);
+        spawnCounterGlobal++;
+        if (isElite) spawnCounterElite = 0; else spawnCounterElite++;
+        if (isMoving) spawnCounterMoving = 0; else spawnCounterMoving++;
 
         if (debugMode)
         {
             Debug.Log($"Spawn#{spawnCounterGlobal} prefab={prefab.name} elite={isElite} moving={isMoving} (forceE={forceElite}, forceM={forceMoving})");
         }
     }
+
+
+
 
     GameObject PickPrefabRandom()
     {
@@ -175,68 +211,89 @@ public class SpawnManager : MonoBehaviour
         return targetPrefabs[idx];
     }
 
-    public void NotifyTargetDestroyed(GameObject obj)
+    // 스폰된 타겟의 OnReturned 이벤트(또는 외부에서 호출하도록 연결) 처리
+    void OnTargetReturned(GameObject obj)
     {
+        Debug.Log($"OnTargetReturned called for {obj.name} (instanceID={obj.GetInstanceID()})");
         if (obj == null) return;
+        Targets t = obj.GetComponent<Targets>();
+        if (t == null) return;
 
+        // 1) 이벤트 리스너 제거
+        t.OnKilled.RemoveListener(OnTargetKilled);
+        t.OnReturned.RemoveListener(OnTargetReturned);
+        
+
+        // 2) SpawnPoint 반환(저장된 originSpawnPoint 사용)
+        if (t.originSpawnPoint != null)
+        {
+            t.originSpawnPoint.Free();
+            t.originSpawnPoint = null;
+        }
+
+        // 3) 컴포넌트 리셋: movement/elite/special 등
+        var pm = obj.GetComponent<PatrolMovement>();
+        if (pm != null) pm.ResetMovement();
+
+        var em = obj.GetComponent<EliteModifier>();
+        if (em != null) em.ResetElite();
+
+        var special = obj.GetComponent<SPMovement>();
+        if (special != null) special.ResetSPMovement();
+
+        // 4) Targets 완전 초기화 (ClearOverrides 포함)
+        t.ResetTarget(); // 내부에서 ClearOverrides도 수행하도록 Targets에 구현해주세요.
+
+        // 5) activeList 제거
         if (activeList.Contains(obj)) activeList.Remove(obj);
 
-        // 풀로 반환
-        if (poolManager != null)
-        {
-            poolManager.Release(obj);
-        }
-        else
-        {
-            // 풀 미사용 시 안전하게 비활성화
-            if (obj.activeInHierarchy) obj.SetActive(false);
-        }
-
-        // 해당 포인트 점유 해제(위치 기준으로 탐색)
-        foreach (var pt in spawnPoints)
-        {
-            if (pt == null) continue;
-            if (Vector3.SqrMagnitude(pt.transform.position - obj.transform.position) < 0.01f)
-            {
-                pt.Free();
-                break;
-            }
-        }
+        // 6) 풀 반환 또는 비활성화
+        if (poolManager != null) poolManager.Release(obj);
+        else if (obj.activeInHierarchy) obj.SetActive(false);
     }
+
+    void OnTargetKilled(int points)
+    {
+        if (gm != null) gm.AddScore(points);
+        // 추가 처리(이펙트, 콤보 등)
+    }
+
+    // 외부에서 수동으로 타겟 제거 시 사용가능(기존 NotifyTargetDestroyed 유지 가능)
+    public void NotifyTargetDestroyed(GameObject obj)
+    {
+        OnTargetReturned(obj);
+    }
+
     public void ResetState()
     {
-        // 카운터 리셋
         spawnCounterGlobal = 0;
         spawnCounterElite = 0;
         spawnCounterMoving = 0;
 
-        // active 리스트가 남아있다면 안전하게 반환 처리
         for (int i = activeList.Count - 1; i >= 0; i--)
         {
             var obj = activeList[i];
             if (obj != null)
             {
+                // 풀에 반환하기 전에 ResetTarget 등 초기화 보장
+                Targets t = obj.GetComponent<Targets>();
+                if (t != null) t.ResetTarget();
+
                 if (poolManager != null) poolManager.Release(obj);
                 else obj.SetActive(false);
             }
             activeList.RemoveAt(i);
         }
 
-        // 포인트 점유 해제
         if (spawnPoints != null)
         {
             foreach (var pt in spawnPoints) if (pt != null) pt.Free();
         }
     }
 
-
-    // 디버그용 즉시 스폰
     [ContextMenu("SpawnOneNow")]
     public void SpawnOneNow()
     {
-        if (spawnPoints != null && spawnPoints.Length > 0)
-        {
-            SpawnAtPoint(spawnPoints[0]);
-        }
+        if (spawnPoints != null && spawnPoints.Length > 0) SpawnAtPoint(spawnPoints[0]);
     }
 }

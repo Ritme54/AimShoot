@@ -1,49 +1,49 @@
 using UnityEngine;
 
-// SpawnPoint: 개별 스폰 지점 컴포넌트
-// - 점유 상태(occupied)를 관리하고, 주변 충돌로 중복 스폰도 감지합니다.
-[RequireComponent(typeof(Transform))]
 public class SpawnPoint : MonoBehaviour
 {
-    public float radius = 0.5f; // 충돌 검사 반경(인스펙터에서 조정)
-    private bool occupied = false;
+    [Header("SpawnPoint Settings")]
+    public float spawnHeightOffset = 0.0f;      // 필요시 Y 오프셋
+    public float checkRadius = 0.5f;            // IsAvailable에서 사용할 충돌 반경
+    public LayerMask blockMask;                 // 점유 검사 레이어
+    [HideInInspector] public bool isOccupied = false;
 
-    // 사용 가능 여부를 반환(occupied 플래그와 물리 검사 결합)
-    public bool IsAvailable(LayerMask targetMask)
-    {
-        if (occupied) return false;
-
-        // 주변에 활성 타깃이 있는지 검사(겹침 방지)
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius, targetMask);
-        foreach (var h in hits)
-        {
-            if (h != null && h.gameObject.activeInHierarchy) return false;
-        }
-        return true;
-    }
-
-    // 점유 설정
+    // 점유 상태 설정
     public void Occupy()
     {
-        occupied = true;
+        isOccupied = true;
     }
 
-    // 점유 해제
     public void Free()
     {
-        occupied = false;
+        isOccupied = false;
     }
 
-    // 점유 상태 조회
-    public bool IsOccupied()
+    // 외부에서 사용: 스폰 가능 여부 판단
+    public bool IsAvailable(LayerMask occupancyMask)
     {
-        return occupied;
+        if (isOccupied) return false;
+        // 지정 레이어를 사용하여 특정 오브젝트가 있으면 사용 불가
+        Collider[] hits = Physics.OverlapSphere(GetSpawnPosition(), checkRadius, occupancyMask);
+        return hits.Length == 0;
     }
 
-    // (편의) 씬에서 시각화용 OnDrawGizmos
+    // 핵심: Spawn 위치 반환 (여기서 높이 보정, 랜덤 오프셋 등을 적용)
+    public Vector3 GetSpawnPosition()
+    {
+        Vector3 pos = transform.position;
+        pos.y += spawnHeightOffset;
+        return pos;
+    }
+
+    // 에디터용: 기즈모 표시
+#if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = occupied ? Color.red : Color.green;
-        Gizmos.DrawWireSphere(transform.position, radius);
+        Gizmos.color = isOccupied ? Color.red : Color.green;
+        Gizmos.DrawSphere(GetSpawnPosition(), 0.1f);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(GetSpawnPosition(), checkRadius);
     }
+#endif
 }

@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7175101283555298001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6220556472985106467}
+  - component: {fileID: 487590303657235207}
+  m_Layer: 0
+  m_Name: 'SpawnManager '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6220556472985106467
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7175101283555298001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &487590303657235207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7175101283555298001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b8d381966207924781233e6194fe64f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  targetPrefabs:
+  - {fileID: 963417570140818037, guid: e8c8389d1d9ccff4ead29a8661c6d061, type: 3}
+  - {fileID: 5140362250260108345, guid: d9353aec04b706e41a77ec65e340fe6d, type: 3}
+  - {fileID: 1767397003249338206, guid: 3da63ff32366c5548b5c05095b8e6675, type: 3}
+  - {fileID: 669624583654497842, guid: a6be50cd203c6c642948feabdc9f866b, type: 3}
+  - {fileID: 8319168366394018973, guid: c3fb753da367d1d4f97453877a012d18, type: 3}
+  - {fileID: 4049666990949159640, guid: 7208e686c801e984bb5daf992b833b11, type: 3}
+  - {fileID: 8160230040516519752, guid: 0eb0f34c93ffc6e43aed1ded4e9bb3e0, type: 3}
+  - {fileID: 3348974364631734081, guid: 7b51939ae2f80414c98f4d613f1864b3, type: 3}
+  - {fileID: 4296676283898966871, guid: cc4af2a9dece3824eb6bacf1b293665a, type: 3}
+  - {fileID: 1730885402636371606, guid: 4221d3c74fac6e04da633e8fc58679f0, type: 3}
+  maxActiveT: 6
+  startDelay: 1
+  spawnDelay: 1.5
+  eliteGuaranteedEvery: 10
+  eliteChance: 0.1
+  movingGuaranteedEvery: 8
+  movingChance: 0.2
+  allowBothEnM: 1
+  poolManager: {fileID: 0}
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  debugMode: 0

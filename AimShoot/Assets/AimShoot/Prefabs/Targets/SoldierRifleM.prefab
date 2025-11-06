@@ -489,6 +489,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: -4869508369305685109}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2145129460422815520}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8792964509973493595}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4705905796405476741}
     - targetCorrespondingSourceObject: {fileID: 502465468816233794, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7929807588127388187}
@@ -583,27 +592,122 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f5b29a892b6a6b4fa9fda473e2cfa4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 25
+  baseMaxHP: 25
   currentHP: 0
   baseScore: 10
-  eliteExtraHP: 0
-  movingExtraHP: 0
-  eliteMovingExtraHP: 0
-  defaultMaterial: {fileID: 2100000, guid: 1addf099752ba62488a655f79a83a321, type: 2}
-  eliteMaterial: {fileID: 2100000, guid: 1cd65ac734f9dff42b09667c0b135c63, type: 2}
-  movingMaterial: {fileID: 2100000, guid: 4c641dd655c93d640bb150fbb9387a5b, type: 2}
-  eliteMovingMaterial: {fileID: 2100000, guid: 1116710e3300dc84598a5457f90c3d69, type: 2}
-  targetRenderers:
-  - {fileID: 0}
+  headshotMultiplier: 1.5
   hitEffectPrefab: {fileID: 0}
-  hitSound: {fileID: 0}
-  deathSound: {fileID: 0}
+  hitSound: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
+  deathSound: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   OnKilled:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 3372322970032247539, guid: 5edd9cd4c73661444af1448daed41558, type: 3}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: AddScore
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnReturned:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 487590303657235207, guid: 8f027bd8c2cf11941bc9b9d7a1e1e59b, type: 3}
+        m_TargetAssemblyTypeName: SpawnManager, Assembly-CSharp
+        m_MethodName: NotifyTargetDestroyed
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  originSpawnPoint: {fileID: 0}
+--- !u!114 &-2145129460422815520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730885402636371606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19fe46eaccce02b4ab13b89c9b8192b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  overrideHP: 40
+  overrideScore: 20
+  eliteMaterial: {fileID: 2100000, guid: 1cd65ac734f9dff42b09667c0b135c63, type: 2}
+  eliteVFX: {fileID: 0}
+  eliteAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
+  audioVolume: 1
+--- !u!114 &-8792964509973493595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730885402636371606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1290999b43c81c44991bd0d4882b31cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  centerTransform: {fileID: 0}
+  centerPosition: {x: 0, y: 0, z: 0}
+  patrolRange: 2
+  speed: 1.2
+  useLocalRight: 1
+  startDirection: 1
+  obstacleDetectDistance: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  waitOnTurn: 0.15
+  overrideHP: 35
+  overrideScore: 15
+  overrideMaterial: {fileID: 2100000, guid: 4c641dd655c93d640bb150fbb9387a5b, type: 2}
+  overrideVFX: {fileID: 0}
+  overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
+  overrideAudioVolume: 1
+  autoInitializeCenterOnAwake: 1
+--- !u!114 &4705905796405476741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730885402636371606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c62d85e5109ecb40a49ea093d8acf84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  centerTransform: {fileID: 0}
+  centerPosition: {x: 0, y: 0, z: 0}
+  patrolRange: 2
+  speed: 1.2
+  useLocalRight: 1
+  startDirection: 1
+  obstacleDetectDistance: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  waitOnTurn: 0.15
+  overrideHP: 50
+  overrideScore: 25
+  overrideMaterial: {fileID: 2100000, guid: 1116710e3300dc84598a5457f90c3d69, type: 2}
+  overrideVFX: {fileID: 0}
+  overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
+  overrideAudioVolume: 1
+  autoInitializeCenterOnAwake: 1
 --- !u!4 &3460290870112494761 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6574882734343921810, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}

@@ -34,12 +34,18 @@ public class Targets : MonoBehaviour
 
     // AudioSource
     AudioSource audioSrc;
+    [HideInInspector] public SpawnPoint originSpawnPoint;
+
 
     void Awake()
-    {
-        audioSrc = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
-        audioSrc.playOnAwake = false;
-        // 초기화
+    {   
+        // 안전한 AudioSource 확보: 프리팹에 없으면 런타임에 추가 (테스트용)
+        audioSrc = GetComponent<AudioSource>();
+        if (audioSrc == null)
+        {
+            audioSrc = gameObject.AddComponent<AudioSource>();
+            audioSrc.playOnAwake = false;
+        }
         ResetTarget();
     }
 
@@ -47,8 +53,9 @@ public class Targets : MonoBehaviour
     public void ResetTarget()
     {
         isDead = false;
-        ClearOverrides();
-        currentHP = baseMaxHP;
+        ClearOverrides();           // hpOverride/scoreOverride 초기화
+        originSpawnPoint = null;    // origin 참조 초기화(여유 안전)
+        currentHP = baseMaxHP;      // 또는 baseMaxHP 대신 originalMaxHP를 사용
     }
 
     // 컴포넌트들이 호출하는 API: override 지정(대체)
@@ -113,22 +120,37 @@ public class Targets : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+        Debug.Log("Targets.Die called: " + name);
 
         int awarded = GetFinalScore(wasHead);
 
-        if (OnKilled != null) OnKilled.Invoke(awarded);
+        // 이벤트로 점수 전달
+        if (OnKilled != null)
+        {
+            OnKilled.Invoke(awarded);
+        }
+        else
+        {
+            Debug.LogWarning($"[Targets] OnKilled 이벤트에 리스너가 없습니다. 지급 점수: {awarded} (Prefab: {gameObject.name})");
+        }
 
+        // 사운드 재생
         if (deathSound != null && audioSrc != null) audioSrc.PlayOneShot(deathSound);
 
         // 비활성화(풀 반환)
         gameObject.SetActive(false);
 
-        if (OnReturned != null) OnReturned.Invoke(this.gameObject);
+        // 반환 이벤트 호출 (listener가 없어도 안전하게 호출하지 않음)
+        Debug.Log($"Invoking OnReturned for {gameObject.name} (instanceID={gameObject.GetInstanceID()})");
+        if (OnReturned != null)
+        {
+            OnReturned.Invoke(this.gameObject); 
+        }
     }
 
-    internal int? GetEffectiveMaxHP()
+    // 추가 권장 메서드: 현재 적용될 최대 HP 반환 (다른 컴포넌트가 필요하면 호출)
+    public int GetEffectiveMaxHP()
     {
-        throw new NotImplementedException();
-    }//'Targets'에는 'GetEffectiveMaxHP'에 대한 정의가 포함되어 있지 않고, 'Targets' 형식의 첫 번째 인수를 허용하는 액세스 가능한 확장 메서드 'GetEffectiveMaxHP'이(가) 없습니다. using 지시문 또는 어셈블리 참조가 있는지 확인하세요.
-    //삭제할것
+        return hpOverride.HasValue ? hpOverride.Value : baseMaxHP;
+    }
 }

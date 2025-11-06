@@ -7,14 +7,10 @@ using UnityEngine;
 /// - 장애물 감지 시 즉시 또는 wait 후 반전
 /// - 인스펙터로 overrideHP / overrideScore / overrideMaterial / VFX / Audio 를 지정 가능
 /// - Apply(true)로 Targets에 override를 설정, Apply(false) 또는 ResetMovement로 해제
-/// - SpawnManager는 
-/// 
-/// 
-/// 
-/// () -> comp.Apply(flag) -> Targets.FinalizeStatsAfterModifiers() 순서로 호출해야 안전
+/// - SpawnManager는 ResetTarget() -> comp.Apply(flag) -> Targets.FinalizeStatsAfterModifiers() 순서로 호출해야 안전
 /// </summary>
 [DisallowMultipleComponent]
-public class PatrolMovement : MonoBehaviour
+public class SPMovement : MonoBehaviour
 {
     [Header("Center")]
     public Transform centerTransform = null;         // 우선 사용될 중심 Transform
@@ -160,7 +156,7 @@ public class PatrolMovement : MonoBehaviour
         }
     }
 
-    public void ResetMovement()
+    public void ResetSPMovement()
     {
         EnableMovement(false);
         StopAllCoroutines();

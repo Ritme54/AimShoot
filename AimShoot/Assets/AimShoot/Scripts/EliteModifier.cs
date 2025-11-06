@@ -44,7 +44,11 @@ public class EliteModifier : MonoBehaviour
         }
         else if (!on && applied)
         {
-            // 해제: 대상은 ResetTarget 또는 명시 해제로 관리
+            // 해제: 대상은
+            //
+            //
+            //
+            // 또는 명시 해제로 관리
             if (targets != null)
             {
                 targets.SetHPOverride(null);
