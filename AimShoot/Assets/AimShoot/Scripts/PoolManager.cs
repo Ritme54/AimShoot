@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 // PoolManager: prefab별 풀을 관리합니다.
@@ -137,6 +138,59 @@ public class PoolManager : MonoBehaviour
         if (prefab == null) return 0;
         if (!pools.ContainsKey(prefab)) return 0;
         return pools[prefab].Count;
+    }
+
+    // PoolManager.cs — 예시 구현 (클래스 내부에 추가)
+    public GameObject GetAndPlay(GameObject prefab, Vector3 pos, Quaternion rot)
+    {
+        var inst = Get(prefab); // 기존 Get(prefab) 메서드 사용 (null 체크 포함)
+        if (inst == null) return null;
+
+        inst.transform.position = pos;
+        inst.transform.rotation = rot;
+
+        // 활성화: 풀에서 꺼낼 때는 SetActive(true) 또는 풀에서 활성화를 담당할 수 있음
+        inst.SetActive(true);
+
+        // IPoolable 인터페이스에 정의된 메서드 호출 (New = 꺼낼 때 초기화)
+        var poolable = inst.GetComponent<Unity.VisualScripting.IPoolable>();
+        if (poolable != null)
+        {
+            try
+            {
+                poolable.New();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Poolable.New() 호출 중 예외: {inst.name} — {ex.Message}");
+            }
+        }
+
+        return inst;
+    }
+
+    // 반환 헬퍼: 풀에 다시 넣을 때 사용
+    public void ReleaseAndFree(GameObject instance)
+    {
+        if (instance == null) return;
+
+        // IPoolable이 있다면 Free() 호출
+        var poolable = instance.GetComponent<Unity.VisualScripting.IPoolable>();
+        if (poolable != null)
+        {
+            try
+            {
+                poolable.Free();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Poolable.Free() 호출 중 예외: {instance.name} — {ex.Message}");
+            }
+        }
+
+        // 비활성화 및 풀 내부 관리(기존 Release 또는 풀에 반환하는 로직 사용)
+        instance.SetActive(false);
+        Release(instance); // 기존 PoolManager.Release(instance) 사용(필요 시 구현에 맞게 변경)
     }
 
     // 풀에서 꺼낼 때(혹은 생성 직후) 객체가 올바르게 초기화되어 있는지 방어적으로 확인

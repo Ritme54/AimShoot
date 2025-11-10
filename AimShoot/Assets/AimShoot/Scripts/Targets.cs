@@ -54,7 +54,7 @@ public class Targets : MonoBehaviour
     {
         isDead = false;
         ClearOverrides();           // hpOverride/scoreOverride 초기화
-        originSpawnPoint = null;    // origin 참조 초기화(여유 안전)
+        
         currentHP = baseMaxHP;      // 또는 baseMaxHP 대신 originalMaxHP를 사용
     }
 

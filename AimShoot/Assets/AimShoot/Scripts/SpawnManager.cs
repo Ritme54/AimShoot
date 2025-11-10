@@ -201,7 +201,13 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-
+    public void SpawnMany(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            SpawnOneNow(); // 또는 기존 SpawnAtRandomPoint() 등 프로젝트에 맞는 호출
+        }
+    }
 
 
     GameObject PickPrefabRandom()

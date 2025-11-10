@@ -49,7 +49,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
   targetPrefabs:
   - {fileID: 963417570140818037, guid: e8c8389d1d9ccff4ead29a8661c6d061, type: 3}
   - {fileID: 5140362250260108345, guid: d9353aec04b706e41a77ec65e340fe6d, type: 3}
