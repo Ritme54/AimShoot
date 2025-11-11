@@ -40,13 +40,12 @@ public class WeaponController : MonoBehaviour
 
     void Update()
     {
-
         if (gun != null)
         {
-            Vector3 aimPoint = GetAimPoint(); // 기존 GetAimPoint 로직 사용
+            Vector3 aimPoint = GetAimPoint(); // 기존 방식 (cross.GetWorldAimPoint 등)
             gun.AimTowards(aimPoint);
         }
-                
+
         // 자동 재장전
         if (!reloading && curAmmo <= 0 && reserveMags > 0 && autoReloadWhenEmpty)
         {
@@ -71,27 +70,100 @@ public class WeaponController : MonoBehaviour
 
     void DoFire()
     {
+        // 기본 상태 점검(필수 체크만)
+        if (data == null || gun == null) return;
+
         curAmmo = Mathf.Max(0, curAmmo - 1);
         BroadcastAmmo();
 
-        Vector3 origin = (aimSource != null) ? aimSource.position : (Camera.main != null ? Camera.main.transform.position : transform.position);
+        // origin 및 aim 계산
+        Vector3 origin = (aimSource != null) ? aimSource.position
+                      : (Camera.main != null ? Camera.main.transform.position : transform.position);
         Vector3 aimPoint = GetAimPoint();
 
-        gun?.Fire(origin, aimPoint, data);
+        // spread 적용 (간단하고 안정적)
+        Vector3 finalAim = aimPoint;
+        if (data.spreadRadius > 0f)
+        {
+            Vector3 dirCenter = (aimPoint - origin).normalized;
+            if (dirCenter.sqrMagnitude > 1e-6f)
+            {
+                Vector3 up = (Camera.main != null && Mathf.Abs(Vector3.Dot(dirCenter, Vector3.up)) > 0.95f)
+                             ? Camera.main.transform.up : Vector3.up;
+                Vector3 right = Vector3.Cross(dirCenter, up).normalized;
+                Vector3 forward = Vector3.Cross(right, dirCenter).normalized;
+
+                float r = data.spreadRadius * Mathf.Sqrt(Random.value);
+                float theta = Random.value * Mathf.PI * 2f;
+                Vector3 offset = right * (Mathf.Cos(theta) * r) + forward * (Mathf.Sin(theta) * r);
+                finalAim = aimPoint + offset;
+            }
+        }
+
+        // muzzle FX와 소리 (GunController가 실제 위치에서 처리)
+        gun.PlayMuzzleFx(data.muzzleFx, data.muzzleFxLocalPos, data.muzzleFxScale, data.useMuzzlePooling);
+        gun?.PlayMuzzleFx(data.muzzleFx, data.muzzleFxLocalPos, data.muzzleFxScale, data.useMuzzlePooling, 0.12f);
 
         if (audioSrc != null && data.fireSfx != null) audioSrc.PlayOneShot(data.fireSfx);
+
+        // 실제 발사(검사와 임팩트 처리는 GunController.Fire 내부에서 담당)
+        gun.Fire(origin, finalAim, data);
+
+        // 트레이서/탄흔 생성: impactFx가 있으면 그걸 사용, 없으면 간단한 라인으로 시각화
+        Vector3 tracerDir = (finalAim - origin).normalized;
+        Ray tracerRay = new Ray(origin, tracerDir);
+        RaycastHit hit;
+        bool isHit = Physics.Raycast(tracerRay, out hit, data.range, data.hitMask);
+
+        Vector3 tracerPoint = isHit ? hit.point : tracerRay.GetPoint(data.range);
+
+        if (data.impactFx != null)
+        {
+            if (gun.pool != null && data.useImpactPooling)
+            {
+                var fx = gun.pool.Get(data.impactFx);
+                fx.transform.position = tracerPoint;
+                fx.transform.rotation = Quaternion.LookRotation(isHit ? hit.normal : tracerDir);
+                fx.transform.localScale = Vector3.one * data.impactFxScale;
+                fx.SetActive(true);
+            }
+            else
+            {
+                var fx = Instantiate(data.impactFx, tracerPoint, Quaternion.LookRotation(isHit ? hit.normal : tracerDir));
+                fx.transform.localScale = Vector3.one * data.impactFxScale;
+                Destroy(fx, data.impactFxLifetime);
+            }
+        }
+        else
+        {
+            // Debug tracer: 간단한 LineRenderer 표시 (개발 빌드에서만)
+#if UNITY_EDITOR
+            StartCoroutine(SpawnTempTracer(origin, tracerPoint, 0.12f, Color.yellow));
+#endif
+
+        }
+
     }
 
     Vector3 GetAimPoint()
     {
-        if (cross != null) return cross.GetWorldAimPoint(data.range, data.hitMask);
-        Camera c = Camera.main;
-        if (c == null) return transform.position + transform.forward * data.range;
-        Ray ray = c.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit h, data.range, data.hitMask)) return h.point;
+        Camera cam = Camera.main;
+        if (cam == null) return transform.position + transform.forward * data.range;
+
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        // aimMask: 기본 hitMask에서 Targets/Head 레이어만 제외 (환경만 보도록)
+        int exclude = LayerMask.GetMask("Targets", "Head"); // 제외할 레이어 이름들
+        int aimMask = data.hitMask.value & ~exclude;       // 환경 레이어만 남음
+
+        if (Physics.Raycast(ray, out RaycastHit hitAim, data.range, aimMask))
+        {
+            return hitAim.point;
+        }
+
+        // 환경에 맞는 것이 없다면 고정 거리 지점 반환
         return ray.GetPoint(data.range);
     }
-
     public void StartReload()
     {
         if (reloading) return;
@@ -144,4 +216,22 @@ public class WeaponController : MonoBehaviour
         // 무기 교체 시 재장전 취소 정책
         if (reloading) CancelReload();
     }
+
+    // 임시 트레이서(LineRenderer) 생성 및 삭제 코루틴
+IEnumerator SpawnTempTracer(Vector3 from, Vector3 to, float life, Color col)
+{
+    // 간단한 LineRenderer를 동적으로 생성해 표시
+    GameObject lrObj = new GameObject("TempTracer");
+    var lr = lrObj.AddComponent<LineRenderer>();
+    lr.positionCount = 2;
+    lr.SetPosition(0, from);
+    lr.SetPosition(1, to);
+    lr.startWidth = lr.endWidth = 0.02f;
+    lr.material = new Material(Shader.Find("Sprites/Default")); // 간단한 셰이더 사용
+    lr.startColor = lr.endColor = col;
+    // 카메라 정렬 등 세부 조정 필요 시 추가
+
+    yield return new WaitForSeconds(life);
+    Destroy(lrObj);
+}
 }

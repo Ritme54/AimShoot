@@ -10,7 +10,6 @@ public class EliteModifier : MonoBehaviour
 
     [Header("Visuals & Audio")]
     public Material eliteMaterial;
-    public GameObject eliteVFX;
     public AudioClip eliteAudio;
     [Range(0f, 1f)] public float audioVolume = 1f;
 
@@ -22,9 +21,14 @@ public class EliteModifier : MonoBehaviour
     void Awake()
     {
         targets = GetComponent<Targets>();
-        audioSrc = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
-        audioSrc.playOnAwake = false;
-        if (eliteVFX != null) eliteVFX.SetActive(false);
+        audioSrc = GetComponent<AudioSource>();
+        if (audioSrc == null)
+        {
+            audioSrc = gameObject.AddComponent<AudioSource>();
+            audioSrc.playOnAwake = false;
+        }
+
+        // 초기화: 할당된 VFX가 있으면 비활성화
     }
 
     // Apply true = enable elite; false = disable
@@ -38,23 +42,27 @@ public class EliteModifier : MonoBehaviour
                 targets.SetScoreOverride(overrideScore > 0 ? (int?)overrideScore : null);
                 if (eliteMaterial != null) targets.ApplyMaterialToRenderers(eliteMaterial);
             }
-            if (eliteVFX != null) eliteVFX.SetActive(true);
-            if (eliteAudio != null && audioSrc != null) audioSrc.PlayOneShot(eliteAudio, audioVolume);
+            else
+            {
+                Debug.LogWarning($"[EliteModifier] Targets 컴포넌트가 없습니다: {gameObject.name}");
+            }
+
+
+            if (eliteAudio != null && audioSrc != null)
+            {
+                audioSrc.PlayOneShot(eliteAudio, audioVolume);
+            }
+
             applied = true;
         }
         else if (!on && applied)
         {
-            // 해제: 대상은
-            //
-            //
-            //
-            // 또는 명시 해제로 관리
             if (targets != null)
             {
                 targets.SetHPOverride(null);
                 targets.SetScoreOverride(null);
             }
-            if (eliteVFX != null) eliteVFX.SetActive(false);
+
             applied = false;
         }
     }
@@ -64,4 +72,21 @@ public class EliteModifier : MonoBehaviour
     {
         Apply(false);
     }
+
+    // 안전장치: 비활성화 시에도 상태 해제
+    void OnDisable()
+    {
+        if (applied) Apply(false);
+    }
+
+    // (선택) 에디터에서 잘못된 할당을 빨리 확인하게 하는 검증용 코드
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (overrideHP < 0) overrideHP = 0;
+        if (overrideScore < 0) overrideScore = 0;
+        if (audioVolume < 0f) audioVolume = 0f;
+        if (audioVolume > 1f) audioVolume = 1f;
+    }
+#endif
 }

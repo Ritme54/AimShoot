@@ -626,7 +626,11 @@ MonoBehaviour:
   currentHP: 0
   baseScore: 10
   headshotMultiplier: 1.5
-  hitEffectPrefab: {fileID: 0}
+  defaultImpactFx: {fileID: 100002, guid: d3850f3249377d8458d5bbea016f99d2, type: 3}
+  headImpactFx: {fileID: 100002, guid: a9ebdedfc9547514ebb2b032dd1e1d62, type: 3}
+  headImpactFx2: {fileID: 100002, guid: fdfe4980b66df7c49ac89db64eb9c050, type: 3}
+  impactFxScale: 1
+  impactFxLifetime: 1
   hitSound: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   deathSound: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   OnKilled:
@@ -675,7 +679,6 @@ MonoBehaviour:
   overrideHP: 40
   overrideScore: 20
   eliteMaterial: {fileID: 2100000, guid: 1cd65ac734f9dff42b09667c0b135c63, type: 2}
-  eliteVFX: {fileID: 0}
   eliteAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   audioVolume: 1
 --- !u!114 &-1698392113391062587
@@ -704,7 +707,6 @@ MonoBehaviour:
   overrideHP: 35
   overrideScore: 15
   overrideMaterial: {fileID: 2100000, guid: 4c641dd655c93d640bb150fbb9387a5b, type: 2}
-  overrideVFX: {fileID: 0}
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1
@@ -734,7 +736,6 @@ MonoBehaviour:
   overrideHP: 50
   overrideScore: 25
   overrideMaterial: {fileID: 2100000, guid: 1116710e3300dc84598a5457f90c3d69, type: 2}
-  overrideVFX: {fileID: 0}
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1

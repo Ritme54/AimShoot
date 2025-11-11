@@ -16,8 +16,16 @@ public class Targets : MonoBehaviour
     [Tooltip("헤드샷일 때 데미지 및 점수에 곱할 배수")]
     public float headshotMultiplier = 1.5f;
 
-    [Header("VFX / Audio")]
-    public GameObject hitEffectPrefab;
+    [Header("Impact FX (basic)")]
+    [Tooltip("기본 명중 이펙트(대부분의 타겟에 공통으로 사용)")]
+    public GameObject defaultImpactFx;    // 대부분의 타겟에서 사용할 기본 이펙트
+    [Tooltip("헤드샷일 때만 재생할 이펙트(있으면 사용, 없으면 기본 이펙트를 사용)")]
+    public GameObject headImpactFx;       // 헤드샷일 때만 사용 (선택)
+    public GameObject headImpactFx2;       // 헤드샷일 때만 사용 (선택)
+    public float impactFxScale = 1f;
+    public float impactFxLifetime = 1f;
+
+    [Header("Audio (legacy)")] 
     public AudioClip hitSound;
     public AudioClip deathSound;
 
@@ -38,8 +46,7 @@ public class Targets : MonoBehaviour
 
 
     void Awake()
-    {   
-        // 안전한 AudioSource 확보: 프리팹에 없으면 런타임에 추가 (테스트용)
+    {
         audioSrc = GetComponent<AudioSource>();
         if (audioSrc == null)
         {
@@ -54,11 +61,9 @@ public class Targets : MonoBehaviour
     {
         isDead = false;
         ClearOverrides();           // hpOverride/scoreOverride 초기화
-        
-        currentHP = baseMaxHP;      // 또는 baseMaxHP 대신 originalMaxHP를 사용
+        currentHP = baseMaxHP;
     }
 
-    // 컴포넌트들이 호출하는 API: override 지정(대체)
     public void SetHPOverride(int? hp)
     {
         hpOverride = hp;
@@ -69,21 +74,18 @@ public class Targets : MonoBehaviour
         scoreOverride = score;
     }
 
-    // 확실한 초기화: 호출 시 오버라이드 해제
     public void ClearOverrides()
     {
         hpOverride = null;
         scoreOverride = null;
     }
 
-    // 스폰 시 최종 HP 계산: 반드시 Apply(컴포넌트) 후 호출
     public void FinalizeStatsAfterModifiers()
     {
         int appliedHP = hpOverride.HasValue ? hpOverride.Value : baseMaxHP;
         currentHP = appliedHP;
     }
 
-    // Apply incoming visual material via renderer.material assignment (instance)
     public void ApplyMaterialToRenderers(Material mat)
     {
         if (mat == null) return;
@@ -91,24 +93,60 @@ public class Targets : MonoBehaviour
         foreach (var r in rends)
         {
             if (r == null) continue;
-            r.material = mat; // 인스턴스화된 material 할당(다른 인스턴스 영향 없음)
+            r.material = mat;
         }
     }
 
-    // 데미지 처리 (isHead: 헤드샷 여부)
+    // 기존 OnHit(bool,is) 호환성 유지: hitPoint/normal 정보가 없을 때 transform 기준으로 처리
     public void OnHit(bool isHead, int damage)
     {
+        // transform.position 및 transform.up을 기본 히트 위치/노멀로 사용해서 새 메서드 호출
+        Vector3 fallbackPoint = transform.position;
+        Vector3 fallbackNormal = transform.up;
+        OnHit(isHead, damage, fallbackPoint, fallbackNormal);
+    }
+
+    // 변경된 OnHit: 발사 측에서 전달한 hitPoint와 hitNormal을 받아 처리
+    public void OnHit(bool isHead, int damage, Vector3 hitPoint, Vector3 hitNormal)
+    {
         if (isDead) return;
+
         int applied = isHead ? Mathf.CeilToInt(damage * headshotMultiplier) : damage;
         currentHP -= applied;
 
-        if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        // 사운드(히트)
         if (hitSound != null && audioSrc != null) audioSrc.PlayOneShot(hitSound);
 
-        if (currentHP <= 0) Die(isHead);
+        // 표적 자체에서 보여줄 임팩트(기본 또는 헤드샷 전용)
+        GameObject fxPrefab = (isHead && headImpactFx != null) ? headImpactFx : defaultImpactFx;
+
+          
+
+        if (fxPrefab != null)
+        {
+            // 임팩트 생성: world 위치 hitPoint, 회전은 hitNormal 기준
+            Quaternion rot = Quaternion.LookRotation(hitNormal != Vector3.zero ? hitNormal : Vector3.up);
+            var inst = Instantiate(fxPrefab, hitPoint, rot);
+            inst.transform.localScale = Vector3.one * impactFxScale;
+            Destroy(inst, Mathf.Max(0.1f, impactFxLifetime));
+        }
+
+        if (isHead && headImpactFx2 != null)
+        {
+
+            Quaternion rot2 = Quaternion.LookRotation(hitNormal != Vector3.zero ? hitNormal : Vector3.up);
+            var inst2 = Instantiate(headImpactFx2, hitPoint, rot2);
+            inst2.transform.localScale = Vector3.one * impactFxScale;
+            Destroy(inst2, Mathf.Max(0.1f, impactFxLifetime));
+        }
+
+
+            if (currentHP <= 0)
+        {
+            Die(isHead);
+        }
     }
 
-    // 최종 점수 계산 및 사망 처리
     int GetFinalScore(bool wasHead)
     {
         int s = scoreOverride.HasValue ? scoreOverride.Value : baseScore;
@@ -124,7 +162,6 @@ public class Targets : MonoBehaviour
 
         int awarded = GetFinalScore(wasHead);
 
-        // 이벤트로 점수 전달
         if (OnKilled != null)
         {
             OnKilled.Invoke(awarded);
@@ -134,21 +171,18 @@ public class Targets : MonoBehaviour
             Debug.LogWarning($"[Targets] OnKilled 이벤트에 리스너가 없습니다. 지급 점수: {awarded} (Prefab: {gameObject.name})");
         }
 
-        // 사운드 재생
         if (deathSound != null && audioSrc != null) audioSrc.PlayOneShot(deathSound);
 
-        // 비활성화(풀 반환)
+        // 풀 사용 시에는 비활성화하여 풀로 반환하도록 처리(SpawnManager/PoolManager가 Release 담당)
         gameObject.SetActive(false);
 
-        // 반환 이벤트 호출 (listener가 없어도 안전하게 호출하지 않음)
         Debug.Log($"Invoking OnReturned for {gameObject.name} (instanceID={gameObject.GetInstanceID()})");
         if (OnReturned != null)
         {
-            OnReturned.Invoke(this.gameObject); 
+            OnReturned.Invoke(this.gameObject);
         }
     }
 
-    // 추가 권장 메서드: 현재 적용될 최대 HP 반환 (다른 컴포넌트가 필요하면 호출)
     public int GetEffectiveMaxHP()
     {
         return hpOverride.HasValue ? hpOverride.Value : baseMaxHP;

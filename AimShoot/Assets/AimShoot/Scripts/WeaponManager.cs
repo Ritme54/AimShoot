@@ -11,6 +11,7 @@ public class WeaponManager : MonoBehaviour
     void Start()
     {
         Equip(primary);
+
     }
 
     void Update()

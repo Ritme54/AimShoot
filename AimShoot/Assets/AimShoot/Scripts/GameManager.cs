@@ -29,11 +29,17 @@ public class GameManager : MonoBehaviour
         timeLeft = timeLimit;              // timeLeft를 timeLimit으로 초기화
         totalScore = 0;                    // 누적 점수 초기화
         isRunning = false;                 // 기본적으로는 정지 상태
+        
     }
 
     // Update: 프레임마다 타이머 처리(게임 진행중일 때만)
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            StartGame();
+        }
+
         // 게임이 진행 중일 때만 시간 감소 로직 실행
         if (isRunning)
         {

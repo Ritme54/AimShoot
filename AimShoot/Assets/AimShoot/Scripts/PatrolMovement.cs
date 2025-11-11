@@ -1,18 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// PatrolMovement
-/// - 중심점(centerTransform 또는 centerPosition)을 기준으로 좌/우(patrolRange) 왕복
-/// - 장애물 감지 시 즉시 또는 wait 후 반전
-/// - 인스펙터로 overrideHP / overrideScore / overrideMaterial / VFX / Audio 를 지정 가능
-/// - Apply(true)로 Targets에 override를 설정, Apply(false) 또는 ResetMovement로 해제
-/// - SpawnManager는 
-/// 
-/// 
-/// 
-/// () -> comp.Apply(flag) -> Targets.FinalizeStatsAfterModifiers() 순서로 호출해야 안전
-/// </summary>
+
 [DisallowMultipleComponent]
 public class PatrolMovement : MonoBehaviour
 {
@@ -37,7 +26,6 @@ public class PatrolMovement : MonoBehaviour
     [Tooltip("0 이면 사용 안 함(override 하지 않음)")]
     public int overrideScore = 0;                   // 프리팹 단위로 고유 점수 지정 가능
     public Material overrideMaterial = null;        // 유닛 구분용 머티리얼
-    public GameObject overrideVFX = null;           // 유닛 구분용 VFX (기본은 비활성)
     public AudioClip overrideAudio = null;          // 적용 시 재생(옵션)
     [Range(0f, 1f)] public float overrideAudioVolume = 1f;
 
@@ -61,8 +49,7 @@ public class PatrolMovement : MonoBehaviour
         targets = GetComponent<Targets>();
         audioSrc = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
         audioSrc.playOnAwake = false;
-
-        if (overrideVFX != null) overrideVFX.SetActive(false);
+             
         if (autoInitializeCenterOnAwake) InitializeCenter();
     }
 
@@ -132,7 +119,6 @@ public class PatrolMovement : MonoBehaviour
                 if (overrideMaterial != null) targets.ApplyMaterialToRenderers(overrideMaterial);
             }
 
-            if (overrideVFX != null) overrideVFX.SetActive(true);
             if (overrideAudio != null && audioSrc != null) audioSrc.PlayOneShot(overrideAudio, overrideAudioVolume);
 
             InitializeCenter(); // 중심 재계산(Spawn 시 transform 위치 변경 가능)
@@ -144,7 +130,6 @@ public class PatrolMovement : MonoBehaviour
         {
             // 해제: 이동 중지, VFX 끄기, Targets는 ResetTarget에서 초기화
             EnableMovement(false);
-            if (overrideVFX != null) overrideVFX.SetActive(false);
             // (선택) targets.ClearOverrides(); // 보통 ResetTarget에서 처리
             applied = false;
         }
