@@ -344,6 +344,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5621113733796075713}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5055860377851862975}
     - targetCorrespondingSourceObject: {fileID: 502465468816233794, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3678813596458031565}
@@ -555,6 +558,30 @@ MonoBehaviour:
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1
+--- !u!114 &-5055860377851862975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669624583654497842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c774fb01ea330f04d8dd051a1dc8128f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 6116170296393588466}
+  idleLayerName: Idles
+  idleStateName: Salute
+  layerDamages: Damages
+  layerDeaths: Deaths
+  triggerDamage: Damage01
+  triggerDeath: Death01
+  idleDelay: 1
+  crossfadeDuration: 0.08
+  layerFadeTime: 0.08
+  damageHold: 0.6
+  deathHold: 1
 --- !u!4 &2398948752816716813 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6574882734343921810, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}

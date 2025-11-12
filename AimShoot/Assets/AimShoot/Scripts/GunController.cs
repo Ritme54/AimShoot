@@ -108,7 +108,7 @@ public class GunController : MonoBehaviour
             var tgt = hit.collider.GetComponentInParent<Targets>();
             if (tgt != null)
             {
-                tgt.OnHit(isHead, dmg, hit.point, hit.normal);
+                tgt.OnHits(isHead, dmg, hit.point, hit.normal);
             }
         }
         // (선택) 미적중일 때 트레이서 시각화 처리하면 여기에 추가

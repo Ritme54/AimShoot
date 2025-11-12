@@ -2148,6 +2148,7 @@ GameObject:
   - component: {fileID: 7395947963025920371}
   - component: {fileID: 3460425840308307305}
   - component: {fileID: -8042038442132965047}
+  - component: {fileID: 5857373833457620719}
   m_Layer: 3
   m_Name: SoldierDualGunF
   m_TagString: Untagged
@@ -2367,6 +2368,30 @@ MonoBehaviour:
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1
+--- !u!114 &5857373833457620719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8319168366394018973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c774fb01ea330f04d8dd051a1dc8128f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 5733380484665250727}
+  idleLayerName: Idles
+  idleStateName: Salute
+  layerDamages: Damages
+  layerDeaths: Deaths
+  triggerDamage: Damage01
+  triggerDeath: Death01
+  idleDelay: 1
+  crossfadeDuration: 0.08
+  layerFadeTime: 0.08
+  damageHold: 0.6
+  deathHold: 1
 --- !u!1 &8329873213943430770
 GameObject:
   m_ObjectHideFlags: 0

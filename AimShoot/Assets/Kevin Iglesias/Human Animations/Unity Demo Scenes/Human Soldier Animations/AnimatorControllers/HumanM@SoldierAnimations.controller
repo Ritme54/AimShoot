@@ -4465,7 +4465,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shoots Upper Body
+  m_Name: Shoots Full Body
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 2129806049654948480}
@@ -7637,127 +7637,127 @@ AnimatorController:
       m_Motion: {fileID: 1784725619941735392, guid: 6f22fe49b5728dd4290ff718a60e712f, type: 3}
     - serializedVersion: 2
       m_State: {fileID: -1035900919049965026}
-      m_Motion: {fileID: -5213601543456405261, guid: e527ca6575bb8af488f8c92b4138d215, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -5921936281794001202}
       m_Motion: {fileID: -9223175892696770778, guid: 826e405836721cf40be3809da0dc6364, type: 3}
     - serializedVersion: 2
       m_State: {fileID: -5242932736249489634}
-      m_Motion: {fileID: -4411762970699987023, guid: f86ca5486a0c1874b83f0519edd2021d, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 1035943313702294936}
-      m_Motion: {fileID: 3577710493906321174, guid: ae16b06449276784caa8a014d2ba4dd0, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -8330726730151814178}
-      m_Motion: {fileID: -2774071859138458923, guid: ef0d58f0f2d84dc4aa5a8d8ee32ca5de, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 7773117195326350550}
-      m_Motion: {fileID: 2359611245458126371, guid: cb31ece7f3fb470438759d184bfcb813, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 5412521727524462420}
-      m_Motion: {fileID: -8952071985365111961, guid: 4026af04b116d1d478aff2545dd70b31, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 4082227660058044635}
-      m_Motion: {fileID: 735775491254075063, guid: 0ebcaadb5c15d934087884734e671eb7, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 0}
-      m_Motion: {fileID: -1448449036015000612, guid: 541283ed5ed33a945a7ed51576972f43, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 0}
-      m_Motion: {fileID: 3427500064524871676, guid: 6bbad33bf5ae1414a8c81313bceb9310, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 726179566879038138}
-      m_Motion: {fileID: -3699873557821829540, guid: 1587a8164a1dd6547aad4feabd0284c9, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -713879876239729583}
-      m_Motion: {fileID: 5474745145565508149, guid: f31a9730ad277a04a82305dc7551530f, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 5547469653501040787}
-      m_Motion: {fileID: 9198130836160679742, guid: 3403a0621a475dd4c9b5fd9f3863d924, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -4699351827124456339}
-      m_Motion: {fileID: -4825407036807947591, guid: 0765d340f8d15c24a87d4a50a3b58326, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -7080516426954292847}
-      m_Motion: {fileID: -9014595069355163410, guid: 0f22a6d1bb9bcf341a28e1a2935e80ef, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -2184418790058865411}
-      m_Motion: {fileID: 1899307541799664182, guid: fc45e69b6a303784a89c57f4a8963259, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 2624064764587965620}
-      m_Motion: {fileID: 8469738483574084053, guid: d018dac0a7b784948bb14e15b77309f9, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 967147398596418670}
-      m_Motion: {fileID: 3750549571610820189, guid: 7a1a8c71bbdac1e419f83307e13ba0cf, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 4271187169291372458}
-      m_Motion: {fileID: -2584449931804811677, guid: f9e2a1f8040a5e148bd0cff4b9a209b2, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -2219178992453336635}
-      m_Motion: {fileID: 6356708902510526698, guid: bbb5f50bca7dcb64d984c1e56cd52d72, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -1208063586048820503}
-      m_Motion: {fileID: -1776428645975024223, guid: b06c351d5627d8c44a9795b6cd2c6eef, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -6267193664273465059}
-      m_Motion: {fileID: -133761679623018575, guid: 566ae1575b20a6948b001a9bc9eae9e1, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -4942803279503453055}
-      m_Motion: {fileID: 9198130836160679742, guid: 3403a0621a475dd4c9b5fd9f3863d924, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 4200774413639375521}
-      m_Motion: {fileID: -4825407036807947591, guid: 0765d340f8d15c24a87d4a50a3b58326, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -5145843798437933978}
-      m_Motion: {fileID: -9162981998956097523, guid: 322d7b7fd182d404c8a0200e0b19da6e, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -4178054815106058917}
-      m_Motion: {fileID: 7239461547140368956, guid: 83429aa7afdeb1441bb7ecc4f320b1d8, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -3729547160715122585}
-      m_Motion: {fileID: 6551139340977938458, guid: 2c811cd8dd1c58d419d86acfe9ece20c, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -1327666488844611527}
-      m_Motion: {fileID: 3673048343550577574, guid: 11904fae224e9874b8755620139dd5ad, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 7214827510585612719}
-      m_Motion: {fileID: -5962141700187261054, guid: 381a571c6b97f9449a02d9ab2357ccb6, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 4542107346247165603}
-      m_Motion: {fileID: 2560626344733644885, guid: 27b9b471bf9deae499f880c3450f4fc3, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -3337121294089518370}
-      m_Motion: {fileID: 5338576662530480957, guid: 35433c2d73e61a547bb07774dddf697f, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 1921101836995220181}
-      m_Motion: {fileID: 6644649084465407074, guid: a9cab56f04b0a0742ba2919245b64d59, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -6657976820155358481}
       m_Motion: {fileID: -57794709565900691, guid: 84781f800961561439ffe31c702436b5, type: 3}
     - serializedVersion: 2
       m_State: {fileID: -8707493712719544455}
-      m_Motion: {fileID: -5213601543456405261, guid: e527ca6575bb8af488f8c92b4138d215, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 2773747157684374380}
-      m_Motion: {fileID: -2774071859138458923, guid: ef0d58f0f2d84dc4aa5a8d8ee32ca5de, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -1056579074449609787}
       m_Motion: {fileID: 7707001963717277441, guid: ddf34426cfa54eb43b42782c3b6523c3, type: 3}
     - serializedVersion: 2
       m_State: {fileID: 13846142793545896}
-      m_Motion: {fileID: -4411762970699987023, guid: f86ca5486a0c1874b83f0519edd2021d, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: -3125580060651578255}
       m_Motion: {fileID: -1561750860778243614, guid: 9f48806bfc583234ebb98dcd73323854, type: 3}
     - serializedVersion: 2
       m_State: {fileID: 707465137188422377}
-      m_Motion: {fileID: -8952071985365111961, guid: 4026af04b116d1d478aff2545dd70b31, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 782588409064659616}
       m_Motion: {fileID: 7300238579497392160, guid: d5d65196dad7126438cf6f02f7d3c705, type: 3}
     - serializedVersion: 2
       m_State: {fileID: 6776050016328465948}
-      m_Motion: {fileID: -3699873557821829540, guid: 1587a8164a1dd6547aad4feabd0284c9, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 6300001589912304391}
       m_Motion: {fileID: -4827907205579446440, guid: ab9abdfcc752b4245af01390e382c56c, type: 3}
@@ -7778,13 +7778,13 @@ AnimatorController:
       m_Motion: {fileID: -8873566483372711579, guid: f1b02d07d22cb8546b4a706ee6df48e0, type: 3}
     - serializedVersion: 2
       m_State: {fileID: -7009998995118381917}
-      m_Motion: {fileID: -7121727305648934245, guid: fa20c466d8f66094c8dcfcd5b5ac4dd6, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 1628421376440493516}
-      m_Motion: {fileID: 5285051073852720744, guid: 141094b5c193f07479667f2af0fbc4bc, type: 3}
+      m_Motion: {fileID: 0}
     - serializedVersion: 2
       m_State: {fileID: 1866124403979863467}
-      m_Motion: {fileID: 6999886666561094716, guid: 8d7b0fc0b41c5f242b555b88fa774a98, type: 3}
+      m_Motion: {fileID: 0}
     m_Behaviours: []
     m_BlendingMode: 0
     m_SyncedLayerIndex: 12
@@ -9467,7 +9467,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: None
+  m_Name: Reload
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -9742,7 +9742,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Reload
+  m_Name: Reloads
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 1520740539281211869}
@@ -12243,7 +12243,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Grenade Upper Body
+  m_Name: Grenade Full Body
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -3344478796838585016}
@@ -14880,7 +14880,7 @@ AnimatorStateMachine:
     m_Position: {x: 320, y: -40, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4594662017055299387}
-    m_Position: {x: 40, y: 20, z: 0}
+    m_Position: {x: 40, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 4023553766645129456}
     m_Position: {x: 320, y: 30, z: 0}
@@ -14899,8 +14899,8 @@ AnimatorStateMachine:
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 90, y: -110, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_EntryPosition: {x: -110, y: 150, z: 0}
+  m_ExitPosition: {x: 690, y: -50, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -4594662017055299387}
 --- !u!1101 &8996766702560637375

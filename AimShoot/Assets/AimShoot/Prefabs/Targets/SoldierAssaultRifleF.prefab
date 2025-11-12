@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 6605074449003580623}
   - component: {fileID: 602919344124018253}
   - component: {fileID: -2887024821723633609}
+  - component: {fileID: -3076476711179455900}
   m_Layer: 3
   m_Name: SoldierAssaultRifleF
   m_TagString: Untagged
@@ -398,6 +399,30 @@ MonoBehaviour:
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1
+--- !u!114 &-3076476711179455900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963417570140818037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c774fb01ea330f04d8dd051a1dc8128f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 2599878530720655338}
+  idleLayerName: Idles
+  idleStateName: Salute
+  layerDamages: Damages
+  layerDeaths: Deaths
+  triggerDamage: Damage01
+  triggerDeath: Death01
+  idleDelay: 1
+  crossfadeDuration: 0.08
+  layerFadeTime: 0.08
+  damageHold: 0.6
+  deathHold: 1
 --- !u!1 &1028099965870855067
 GameObject:
   m_ObjectHideFlags: 0

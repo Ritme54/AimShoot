@@ -520,6 +520,7 @@ GameObject:
   - component: {fileID: 3045902904589824186}
   - component: {fileID: -1698392113391062587}
   - component: {fileID: 181355160591927765}
+  - component: {fileID: 7486831756260148517}
   m_Layer: 3
   m_Name: SoldierBazookaF
   m_TagString: Untagged
@@ -739,6 +740,30 @@ MonoBehaviour:
   overrideAudio: {fileID: 8300000, guid: 1e7a587164fcbef45b40536469e6c432, type: 3}
   overrideAudioVolume: 1
   autoInitializeCenterOnAwake: 1
+--- !u!114 &7486831756260148517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767397003249338206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c774fb01ea330f04d8dd051a1dc8128f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 8654800825960059285}
+  idleLayerName: Idles
+  idleStateName: Salute
+  layerDamages: Damages
+  layerDeaths: Deaths
+  triggerDamage: Damage01
+  triggerDeath: Death01
+  idleDelay: 1
+  crossfadeDuration: 0.08
+  layerFadeTime: 0.08
+  damageHold: 0.6
+  deathHold: 1
 --- !u!1 &2041268410818302621
 GameObject:
   m_ObjectHideFlags: 0

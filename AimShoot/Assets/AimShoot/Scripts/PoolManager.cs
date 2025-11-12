@@ -141,7 +141,6 @@ public class PoolManager : MonoBehaviour
             Destroy(instance);
             return;
         }
-
         stack.Push(instance);
     }
 

@@ -175,19 +175,24 @@ public class SpawnManager : MonoBehaviour
         // 8) Targets 최종화
         t.FinalizeStatsAfterModifiers();
 
-        // 9) 이벤트 등록 (반환/사망 콜백)
+        // listener 등록 부분(Replace 기존 AddListener 부분)
+        t.OnKilled.RemoveListener(OnTargetKilled);
         t.OnKilled.AddListener(OnTargetKilled);
 
+        t.OnReturned.RemoveListener(OnTargetReturned);
         t.OnReturned.AddListener(OnTargetReturned);
-        Debug.Log($"Added OnReturned listener for {t.gameObject.name} (instanceID={t.gameObject.GetInstanceID()}) at SpawnAtPoint");
 
-        //Debug.Log($"Added OnReturned listener for {t.name}");
+        // 초기화
+        t.ResetTarget();
+        var tac = obj.GetComponent<TargetAnimationController>();
+        if (tac != null) tac.ResetAnimationState();
 
-        // 10) 위치/활성화/포인트 점유
+        // 활성화/점유
         obj.transform.position = pt.GetSpawnPosition();
         obj.transform.rotation = pt.transform.rotation;
         obj.SetActive(true);
         pt.Occupy();
+        activeList.Add(obj);
 
         // 11) 리스트/카운터 업데이트
         if (!activeList.Contains(obj)) activeList.Add(obj);
@@ -220,42 +225,24 @@ public class SpawnManager : MonoBehaviour
     // 스폰된 타겟의 OnReturned 이벤트(또는 외부에서 호출하도록 연결) 처리
     void OnTargetReturned(GameObject obj)
     {
-        Debug.Log($"OnTargetReturned called for {obj.name} (instanceID={obj.GetInstanceID()})");
         if (obj == null) return;
         Targets t = obj.GetComponent<Targets>();
-        if (t == null) return;
-
-        // 1) 이벤트 리스너 제거
-        t.OnKilled.RemoveListener(OnTargetKilled);
-        t.OnReturned.RemoveListener(OnTargetReturned);
-        
-
-        // 2) SpawnPoint 반환(저장된 originSpawnPoint 사용)
-        if (t.originSpawnPoint != null)
+        if (t != null)
         {
-            t.originSpawnPoint.Free();
-            t.originSpawnPoint = null;
+
+            t.OnKilled.RemoveListener(OnTargetKilled);
+            t.OnReturned.RemoveListener(OnTargetReturned);
+            if (t.originSpawnPoint != null) { t.originSpawnPoint.Free(); t.originSpawnPoint = null; }
+            // reset components
+            var pm = obj.GetComponent<PatrolMovement>(); pm?.ResetMovement();
+            var em = obj.GetComponent<EliteModifier>(); em?.ResetElite();
+            t.ResetTarget();
         }
 
-        // 3) 컴포넌트 리셋: movement/elite/special 등
-        var pm = obj.GetComponent<PatrolMovement>();
-        if (pm != null) pm.ResetMovement();
-
-        var em = obj.GetComponent<EliteModifier>();
-        if (em != null) em.ResetElite();
-
-        var special = obj.GetComponent<SPMovement>();
-        if (special != null) special.ResetSPMovement();
-
-        // 4) Targets 완전 초기화 (ClearOverrides 포함)
-        t.ResetTarget(); // 내부에서 ClearOverrides도 수행하도록 Targets에 구현해주세요.
-
-        // 5) activeList 제거
-        if (activeList.Contains(obj)) activeList.Remove(obj);
-
-        // 6) 풀 반환 또는 비활성화
         if (poolManager != null) poolManager.Release(obj);
-        else if (obj.activeInHierarchy) obj.SetActive(false);
+        else obj.SetActive(false);
+
+        activeList.Remove(obj);
     }
 
     void OnTargetKilled(int points)

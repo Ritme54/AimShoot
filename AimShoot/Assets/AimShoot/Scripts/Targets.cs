@@ -1,4 +1,6 @@
-using System;
+ï»¿using System;
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,42 +10,42 @@ using UnityEngine.Events;
 public class Targets : MonoBehaviour
 {
     [Header("Base Stats")]
-    public int baseMaxHP = 25;                // ÇÁ¸®ÆÕ ±âº» ÃÖ´ë Ã¼·Â
-    [HideInInspector] public int currentHP;   // ·±Å¸ÀÓ Ã¼·Â
-    public int baseScore = 10;                // ÇÁ¸®ÆÕ ±âº» Á¡¼ö
+    public int baseMaxHP = 25;
+    [HideInInspector] public int currentHP;
+    public int baseScore = 10;
 
     [Header("Headshot")]
-    [Tooltip("Çìµå¼¦ÀÏ ¶§ µ¥¹ÌÁö ¹× Á¡¼ö¿¡ °öÇÒ ¹è¼ö")]
+    [Tooltip("í—¤ë“œìƒ·ì¼ ë•Œ ë°ë¯¸ì§€ ë° ì ìˆ˜ì— ê³±í•  ë°°ìˆ˜")]
     public float headshotMultiplier = 1.5f;
 
     [Header("Impact FX (basic)")]
-    [Tooltip("±âº» ¸íÁß ÀÌÆåÆ®(´ëºÎºĞÀÇ Å¸°Ù¿¡ °øÅëÀ¸·Î »ç¿ë)")]
-    public GameObject defaultImpactFx;    // ´ëºÎºĞÀÇ Å¸°Ù¿¡¼­ »ç¿ëÇÒ ±âº» ÀÌÆåÆ®
-    [Tooltip("Çìµå¼¦ÀÏ ¶§¸¸ Àç»ıÇÒ ÀÌÆåÆ®(ÀÖÀ¸¸é »ç¿ë, ¾øÀ¸¸é ±âº» ÀÌÆåÆ®¸¦ »ç¿ë)")]
-    public GameObject headImpactFx;       // Çìµå¼¦ÀÏ ¶§¸¸ »ç¿ë (¼±ÅÃ)
-    public GameObject headImpactFx2;       // Çìµå¼¦ÀÏ ¶§¸¸ »ç¿ë (¼±ÅÃ)
+    public GameObject defaultImpactFx;
+    public GameObject headImpactFx;
+    public GameObject headImpactFx2;
     public float impactFxScale = 1f;
     public float impactFxLifetime = 1f;
 
-    [Header("Audio (legacy)")] 
+    [Header("Audio (legacy)")]
     public AudioClip hitSound;
     public AudioClip deathSound;
 
     [Header("Events")]
-    public KilledEvent OnKilled;              // GameManager.AddScore ¿¬°á ±ÇÀå
-    public ReturnedEvent OnReturned;          // SpawnManager.NotifyTargetDestroyed ¿¬°á ±ÇÀå
+    public KilledEvent OnKilled;
+    public ReturnedEvent OnReturned;
 
-    // ³»ºÎ »óÅÂ
+    // ë‚´ë¶€ ìƒíƒœ
     bool isDead = false;
 
-    // override / temp °ª (ÄÄÆ÷³ÍÆ®°¡ ¼³Á¤)
-    int? hpOverride = null;                   // null => »ç¿ë ¾È ÇÔ
-    int? scoreOverride = null;                // null => »ç¿ë ¾È ÇÔ
+    // overrides
+    int? hpOverride = null;
+    int? scoreOverride = null;
 
-    // AudioSource
+    // ì»´í¬ë„ŒíŠ¸ ìºì‹œ
     AudioSource audioSrc;
-    [HideInInspector] public SpawnPoint originSpawnPoint;
+    Animator anim;
+    bool returnInProgress;
 
+    [HideInInspector] public SpawnPoint originSpawnPoint;
 
     void Awake()
     {
@@ -53,15 +55,15 @@ public class Targets : MonoBehaviour
             audioSrc = gameObject.AddComponent<AudioSource>();
             audioSrc.playOnAwake = false;
         }
+
         ResetTarget();
     }
-
-    // Ç®¿¡¼­ ²¨³ÂÀ» ¶§ ¹İµå½Ã È£Ãâ
+        
     public void ResetTarget()
     {
         isDead = false;
-        ClearOverrides();           // hpOverride/scoreOverride ÃÊ±âÈ­
-        currentHP = baseMaxHP;
+        ClearOverrides();
+        currentHP = GetEffectiveMaxHP();
     }
 
     public void SetHPOverride(int? hp)
@@ -82,8 +84,7 @@ public class Targets : MonoBehaviour
 
     public void FinalizeStatsAfterModifiers()
     {
-        int appliedHP = hpOverride.HasValue ? hpOverride.Value : baseMaxHP;
-        currentHP = appliedHP;
+        currentHP = GetEffectiveMaxHP();
     }
 
     public void ApplyMaterialToRenderers(Material mat)
@@ -97,34 +98,37 @@ public class Targets : MonoBehaviour
         }
     }
 
-    // ±âÁ¸ OnHit(bool,is) È£È¯¼º À¯Áö: hitPoint/normal Á¤º¸°¡ ¾øÀ» ¶§ transform ±âÁØÀ¸·Î Ã³¸®
+    // ê¸°ì¡´ í˜¸í™˜ì„±: transform ê¸°ì¤€ìœ¼ë¡œ ì²˜ë¦¬
     public void OnHit(bool isHead, int damage)
     {
-        // transform.position ¹× transform.upÀ» ±âº» È÷Æ® À§Ä¡/³ë¸Ö·Î »ç¿ëÇØ¼­ »õ ¸Ş¼­µå È£Ãâ
         Vector3 fallbackPoint = transform.position;
         Vector3 fallbackNormal = transform.up;
-        OnHit(isHead, damage, fallbackPoint, fallbackNormal);
+        OnHits(isHead, damage, fallbackPoint, fallbackNormal);
     }
 
-    // º¯°æµÈ OnHit: ¹ß»ç Ãø¿¡¼­ Àü´ŞÇÑ hitPoint¿Í hitNormalÀ» ¹Ş¾Æ Ã³¸®
-    public void OnHit(bool isHead, int damage, Vector3 hitPoint, Vector3 hitNormal)
+    // ì£¼ëœ íˆíŠ¸ ì²˜ë¦¬
+    public void OnHits(bool isHead, int damage, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (isDead) return;
+        // ë°ë¯¸ì§€ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
+        var tac = GetComponent<TargetAnimationController>();
+        if (tac != null) tac.PlayHit();
+        else GetComponent<Animator>()?.SetTrigger("Damage01");
 
+        // ë°ë¯¸ì§€ ì ìš©
         int applied = isHead ? Mathf.CeilToInt(damage * headshotMultiplier) : damage;
         currentHP -= applied;
 
-        // »ç¿îµå(È÷Æ®)
-        if (hitSound != null && audioSrc != null) audioSrc.PlayOneShot(hitSound);
+        // íˆíŠ¸ ì‚¬ìš´ë“œ ì¬ìƒ
+        if (hitSound != null && audioSrc != null)
+        {
+            audioSrc.PlayOneShot(hitSound);
+        }
 
-        // Ç¥Àû ÀÚÃ¼¿¡¼­ º¸¿©ÁÙ ÀÓÆÑÆ®(±âº» ¶Ç´Â Çìµå¼¦ Àü¿ë)
+        // FX ìƒì„±
         GameObject fxPrefab = (isHead && headImpactFx != null) ? headImpactFx : defaultImpactFx;
-
-          
-
         if (fxPrefab != null)
         {
-            // ÀÓÆÑÆ® »ı¼º: world À§Ä¡ hitPoint, È¸ÀüÀº hitNormal ±âÁØ
             Quaternion rot = Quaternion.LookRotation(hitNormal != Vector3.zero ? hitNormal : Vector3.up);
             var inst = Instantiate(fxPrefab, hitPoint, rot);
             inst.transform.localScale = Vector3.one * impactFxScale;
@@ -133,54 +137,113 @@ public class Targets : MonoBehaviour
 
         if (isHead && headImpactFx2 != null)
         {
-
             Quaternion rot2 = Quaternion.LookRotation(hitNormal != Vector3.zero ? hitNormal : Vector3.up);
             var inst2 = Instantiate(headImpactFx2, hitPoint, rot2);
             inst2.transform.localScale = Vector3.one * impactFxScale;
             Destroy(inst2, Mathf.Max(0.1f, impactFxLifetime));
         }
 
-
-            if (currentHP <= 0)
+        // ì‚¬ë§ ê²€ì‚¬
+        if (currentHP <= 0)
         {
             Die(isHead);
         }
     }
+
+   void Die(bool wasHead)
+{
+    if (isDead) return;
+    isDead = true;
+
+    int awarded = GetFinalScore(wasHead);
+
+    if (OnKilled != null)
+    {
+        OnKilled.Invoke(awarded);
+    }
+    else
+    {
+        Debug.LogWarning($"[Targets] OnKilled ì´ë²¤íŠ¸ì— ë¦¬ìŠ¤ë„ˆê°€ ì—†ìŠµë‹ˆë‹¤. ì§€ê¸‰ ì ìˆ˜: {awarded} (Prefab: {gameObject.name})");
+    }
+
+    // ì‚¬ë§ ì‚¬ìš´ë“œ
+    if (deathSound != null && audioSrc != null)
+    {
+        audioSrc.PlayOneShot(deathSound);
+    }
+
+    // ìš°ì„  OnReturned ì½œë°±ì„ ë¯¸ë¦¬ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ , ë°˜í™˜ì€ ì• ë‹ˆ/ì½œë°± í›„ì— í•˜ê¸¸ ê¶Œì¥í•©ë‹ˆë‹¤.
+    // ë§Œì•½ PoolManagerê°€ ì¦‰ì‹œ ì œê±°ë¥¼ ê¸°ëŒ€í•œë‹¤ë©´ ì•„ë˜ ì½”ë£¨í‹´ì—ì„œ í˜¸ì¶œí•©ë‹ˆë‹¤.
+
+    var tac = GetComponent<TargetAnimationController>();
+    if (tac != null)
+    {
+        // TargetAnimationControllerê°€ ì• ë‹ˆ ì¬ìƒê³¼ ë¹„í™œì„±í™”(ë˜ëŠ” ë°˜í™˜)ë¥¼ ì±…ì„ì§€ë„ë¡ í•œë‹¤.
+        tac.PlayDie();
+            StartCoroutine(ForceReturnIfStillActive(2.0f));
+        }
+    else
+    {
+        // fallback: Animator íŠ¸ë¦¬ê±°ë¥¼ ì§ì ‘ ê±¸ê³ , ì• ë‹ˆ ê¸¸ì´ ë§Œí¼ ê¸°ë‹¤ë ¸ë‹¤ê°€ ë°˜í™˜/ë¹„í™œì„±í™”
+        var animator = GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.ResetTrigger("Death01");
+            animator.SetTrigger("Death01");
+        }
+
+        // ì•ˆì „í•œ ì½”ë£¨í‹´ í˜¸ì¶œ â€” í´ë˜ìŠ¤ ë‚´ë¶€ì— ì•„ë˜ IEnumerator DisableAfterDelayê°€ ìˆì–´ì•¼ í•¨
+        StartCoroutine(DisableAfterDelayFallback(animator, 1.0f)); // 1.0fëŠ” í´ë°± ì‹œê°„(í•„ìš”ì‹œ ì¡°ì •)
+    }
+}
+    IEnumerator ForceReturnIfStillActive(float wait)
+    {
+        yield return new WaitForSeconds(wait);
+        if (!gameObject.activeInHierarchy) yield break; // ì´ë¯¸ ë°˜í™˜ë¨
+        Debug.LogWarning("[Targets] Force returning " + gameObject.name);
+        OnReturned?.Invoke(gameObject);
+        gameObject.SetActive(false);
+    }
+    // Targets í´ë˜ìŠ¤ ë‚´ë¶€ì— ì¶”ê°€í•  ì½”ë£¨í‹´
+    IEnumerator DisableAfterDelayFallback(Animator animator, float fallbackSeconds)
+{
+    // ì• ë‹ˆ í´ë¦½ ê¸¸ì´ë¥¼ ìš°ì„  ì°¾ì•„ ì‚¬ìš©
+    float wait = fallbackSeconds;
+    if (animator != null && animator.runtimeAnimatorController != null)
+    {
+        // Death ì• ë‹ˆ í´ë¦½ë“¤ ì¤‘ í•˜ë‚˜ì˜ ê¸¸ì´ë¥¼ ì°¾ê±°ë‚˜ í‰ê· /ìµœëŒ€ê°’ì„ ì‚¬ìš©
+        var clips = animator.runtimeAnimatorController.animationClips;
+        float found = 0f;
+        foreach (var c in clips)
+        {
+            if (c == null) continue;
+            // í´ë¦½ëª… ê·œì¹™ì— ë”°ë¼ ê²€ì‚¬ (ì˜ˆ: "Death" í¬í•¨)
+            if (c.name.Contains("Death") || c.name.Contains("death"))
+            {
+                found = Mathf.Max(found, c.length);
+            }
+        }
+        if (found > 0f) wait = found;
+    }
+
+    // ëŒ€ê¸°
+    yield return new WaitForSeconds(Mathf.Max(0.05f, wait + 0.05f));
+
+    // í’€ ë°˜í™˜ ë˜ëŠ” OnReturned ì´ë²¤íŠ¸ ë°œìƒ
+    if (OnReturned != null)
+        OnReturned.Invoke(this.gameObject);
+    else
+        Debug.LogWarning($"[Targets] OnReturned ì´ë²¤íŠ¸ì— ë¦¬ìŠ¤ë„ˆê°€ ì—†ìŠµë‹ˆë‹¤. (Prefab: {gameObject.name})");
+
+    // ì˜¤ë¸Œì íŠ¸ ë¹„í™œì„±í™”(í˜¹ì€ PoolManager.Releaseë¡œ êµì²´)
+    gameObject.SetActive(false);
+}
 
     int GetFinalScore(bool wasHead)
     {
         int s = scoreOverride.HasValue ? scoreOverride.Value : baseScore;
         if (wasHead) s = Mathf.CeilToInt(s * headshotMultiplier);
         return s;
-    }
-
-    void Die(bool wasHead)
-    {
-        if (isDead) return;
-        isDead = true;
-        Debug.Log("Targets.Die called: " + name);
-
-        int awarded = GetFinalScore(wasHead);
-
-        if (OnKilled != null)
-        {
-            OnKilled.Invoke(awarded);
-        }
-        else
-        {
-            Debug.LogWarning($"[Targets] OnKilled ÀÌº¥Æ®¿¡ ¸®½º³Ê°¡ ¾ø½À´Ï´Ù. Áö±Ş Á¡¼ö: {awarded} (Prefab: {gameObject.name})");
-        }
-
-        if (deathSound != null && audioSrc != null) audioSrc.PlayOneShot(deathSound);
-
-        // Ç® »ç¿ë ½Ã¿¡´Â ºñÈ°¼ºÈ­ÇÏ¿© Ç®·Î ¹İÈ¯ÇÏµµ·Ï Ã³¸®(SpawnManager/PoolManager°¡ Release ´ã´ç)
-        gameObject.SetActive(false);
-
-        Debug.Log($"Invoking OnReturned for {gameObject.name} (instanceID={gameObject.GetInstanceID()})");
-        if (OnReturned != null)
-        {
-            OnReturned.Invoke(this.gameObject);
-        }
     }
 
     public int GetEffectiveMaxHP()
